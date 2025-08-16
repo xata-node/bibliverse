@@ -1,0 +1,87 @@
+package com.gemini.biblify.ui.screens
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.gemini.biblify.data.Verse
+import com.gemini.biblify.viewmodel.MainViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
+    val favorites by viewModel.favoriteVerses.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Favorites") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        if (favorites.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("You haven't added any favorites yet.")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(favorites, key = { it.text + it.reference }) { verse ->
+                    // FIX 1.1: Используем компонент, который всегда показывает "избранное"
+                    FavoriteItem(
+                        verse = verse,
+                        onRemove = { viewModel.toggleFavorite(verse) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Компонент для элемента в списке избранного
+@Composable
+fun FavoriteItem(verse: Verse, onRemove: () -> Unit) {
+    Card(elevation = CardDefaults.cardElevation(2.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(verse.text, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(verse.reference, style = MaterialTheme.typography.bodySmall)
+            }
+            // Иконка всегда заполнена и работает на удаление
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Filled.Favorite,
+                    contentDescription = "Remove from Favorites",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
