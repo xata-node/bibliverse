@@ -1,9 +1,10 @@
-// --- Файл: ui/screens/MainScreen.kt ---
 package com.gemini.biblify.ui.screens
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
@@ -18,7 +19,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.gemini.biblify.data.Verse
 import com.gemini.biblify.ui.navigation.Screen
 import com.gemini.biblify.viewmodel.MainViewModel
 
@@ -33,7 +33,6 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
             TopAppBar(
                 title = { Text("Biblify") },
                 actions = {
-                    // FIX 1.2: Передаем текущий стих в функцию
                     IconButton(onClick = { verse?.let { viewModel.toggleFavorite(it) } }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -84,54 +83,85 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            var swipeProcessed by remember { mutableStateOf(false) }
-            Card(
+            // Контейнер для карточки и кнопок навигации
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = { swipeProcessed = false },
-                            onHorizontalDrag = { change, dragAmount ->
-                                change.consume()
-                                if (swipeProcessed) return@detectHorizontalDragGestures
-
-                                when {
-                                    dragAmount > 50 -> {
-                                        viewModel.showPreviousVerse()
-                                        swipeProcessed = true
-                                    }
-                                    dragAmount < -50 -> {
-                                        viewModel.showNextVerse()
-                                        swipeProcessed = true
-                                    }
-                                }
-                            }
-                        )
-                    },
-                elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                Column(
+                var swipeProcessed by remember { mutableStateOf(false) }
+                Card(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .pointerInput(Unit) {
+                            detectHorizontalDragGestures(
+                                onDragStart = { swipeProcessed = false },
+                                onHorizontalDrag = { change, dragAmount ->
+                                    change.consume()
+                                    if (swipeProcessed) return@detectHorizontalDragGestures
+
+                                    when {
+                                        dragAmount > 50 -> {
+                                            viewModel.showPreviousVerse()
+                                            swipeProcessed = true
+                                        }
+                                        dragAmount < -50 -> {
+                                            viewModel.showNextVerse()
+                                            swipeProcessed = true
+                                        }
+                                    }
+                                }
+                            )
+                        },
+                    elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    verse?.let {
-                        Text(
-                            text = "\"${it.text}\"",
-                            style = MaterialTheme.typography.headlineSmall,
-                            textAlign = TextAlign.Center
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 48.dp, vertical = 24.dp), // Добавлен отступ для кнопок
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        verse?.let {
+                            Text(
+                                text = "\"${it.text}\"",
+                                style = MaterialTheme.typography.headlineSmall,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = it.reference,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontStyle = FontStyle.Italic,
+                                textAlign = TextAlign.Center
+                            )
+                        } ?: CircularProgressIndicator()
+                    }
+                }
+
+                // Кнопки навигации по бокам
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter) // Выравниваем по нижнему краю
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp), // Отступ снизу
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { viewModel.showPreviousVerse() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Previous Verse",
+                            modifier = Modifier.size(36.dp) // Увеличенный размер
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = it.reference,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontStyle = FontStyle.Italic,
-                            textAlign = TextAlign.Center
+                    }
+                    IconButton(onClick = { viewModel.showNextVerse() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Next Verse",
+                            modifier = Modifier.size(36.dp) // Увеличенный размер
                         )
-                    } ?: CircularProgressIndicator()
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

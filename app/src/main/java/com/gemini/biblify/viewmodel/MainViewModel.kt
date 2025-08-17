@@ -112,7 +112,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun loadData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _isSearching.value = true
             _verses.value = repository.loadVerses()
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
