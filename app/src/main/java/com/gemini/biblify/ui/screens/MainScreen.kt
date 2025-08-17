@@ -1,5 +1,7 @@
 package com.gemini.biblify.ui.screens
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -10,23 +12,39 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.gemini.biblify.data.Verse
 import com.gemini.biblify.ui.navigation.Screen
 import com.gemini.biblify.viewmodel.MainViewModel
+
+// Helper function to create and launch the share intent
+private fun shareVerse(context: Context, verse: Verse) {
+    val shareText = "\"${verse.text}\"\n- ${verse.reference}"
+    val sendIntent: Intent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, shareText)
+        type = "text/plain"
+    }
+    val shareIntent = Intent.createChooser(sendIntent, null)
+    context.startActivity(shareIntent)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel, navController: NavController) {
     val verse by viewModel.currentVerse.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -38,6 +56,12 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                             contentDescription = "Favorite",
                             tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    IconButton(onClick = { verse?.let { shareVerse(context, it) } }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share Verse"
                         )
                     }
                     IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
