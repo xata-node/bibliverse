@@ -4,7 +4,6 @@ import android.app.Application
 import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.gemini.biblify.data.DataStoreManager
 import com.gemini.biblify.data.Verse
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,6 +30,9 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     private val _verses = MutableStateFlow<List<Verse>>(emptyList())
     private var verseToIndexMap: Map<Verse, Int> = emptyMap()
+
+    // --- НОВЫЙ БЫСТРЫЙ ИНДЕКС ДЛЯ ПОИСКА ПО ССЫЛКАМ ---
+    private var referenceSearchIndex: Map<String, List<Verse>> = emptyMap()
 
     private val _currentVerse = MutableStateFlow<Verse?>(null)
     val currentVerse = _currentVerse.asStateFlow()
@@ -56,7 +57,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
 
-    // --- НОВАЯ ОПТИМИЗИРОВАННАЯ ЛОГИКА ПОИСКА ---
+    // --- УЛУЧШЕННАЯ ЛОГИКА ПОИСКА ---
     private val filteredVerses = searchQuery
         .debounce(300) // Небольшая задержка перед началом поиска
         .combine(_verses) { query, verseList ->
@@ -64,21 +65,25 @@ class MainViewModel(private val application: Application) : ViewModel() {
                 _isSearching.value = false
                 return@combine emptyList<Verse>()
             }
-            _isSearching.value = true
+            if (verseList.isEmpty()) {
+                _isSearching.value = false
+                return@combine emptyList<Verse>()
+            }
+
             val startTime = System.currentTimeMillis()
-
             val trimmedQuery = query.trim().lowercase()
-            val results = verseList.filter { verse ->
-                val verseRefLower = verse.reference.lowercase()
+            _isSearching.value = true
 
-                // Проверяем точное совпадение со ссылкой (Genesis 2:2)
-                if (verseRefLower == trimmedQuery) return@filter true
-
-                // Проверяем, начинается ли ссылка с запроса (Genesis 2)
-                if (verseRefLower.startsWith(trimmedQuery)) return@filter true
-
-                // Если ничего не совпало, ищем в тексте стиха
-                verse.text.lowercase().contains(trimmedQuery)
+            // Шаг 1: Поиск в быстром индексе по ссылкам (главы и стихи)
+            val referenceResults = referenceSearchIndex[trimmedQuery]
+            val results = if (referenceResults != null) {
+                referenceResults
+            } else {
+                // Шаг 2: Если в быстром индексе нет, делаем обычный текстовый поиск
+                verseList.filter { verse ->
+                    verse.text.lowercase().contains(trimmedQuery) ||
+                            verse.reference.lowercase().contains(trimmedQuery)
+                }
             }
 
             val endTime = System.currentTimeMillis()
@@ -108,8 +113,24 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     private fun loadData() {
         viewModelScope.launch {
+            _isSearching.value = true
             _verses.value = repository.loadVerses()
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
+
+            // --- СОЗДАНИЕ БЫСТРОГО ИНДЕКСА ДЛЯ ССЫЛОК ---
+            referenceSearchIndex = _verses.value.groupBy { verse ->
+                verse.reference.lowercase()
+                    .substringAfter(" ") // Берем только "2:2" из "Genesis 2:2"
+            }
+            // Также добавляем поиск только по главе, например "2"
+            val chapters = _verses.value.groupBy { it.reference.lowercase().substringAfter(" ").substringBefore(":") }
+
+            val combinedIndex = referenceSearchIndex.toMutableMap()
+            chapters.forEach { (chapter, verses) ->
+                combinedIndex[chapter] = verses
+            }
+
+            referenceSearchIndex = combinedIndex
 
             val initialVerse = _pendingVerseFromNotification.value
             if (initialVerse != null) {
@@ -118,6 +139,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
             } else {
                 showInitialVerse()
             }
+            _isSearching.value = false
         }
     }
 
