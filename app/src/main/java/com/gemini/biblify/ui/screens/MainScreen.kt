@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -142,7 +144,8 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 48.dp, vertical = 24.dp), // Добавлен отступ для кнопок
+                            .padding(horizontal = 48.dp, vertical = 24.dp) // Добавлен отступ для кнопок
+                            .verticalScroll(rememberScrollState()), // Позволяет скроллить
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {

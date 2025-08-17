@@ -174,10 +174,9 @@ class MainViewModel(private val application: Application) : ViewModel() {
             newIndex = Random.nextInt(_verses.value.size)
         } while (newIndex == currentVerseIndex)
 
-        val history = _verseHistory.value.take(_historyIndex.value + 1).toMutableList()
-        history.add(newIndex)
-        _verseHistory.value = history
-        _historyIndex.value = history.lastIndex
+        val newHistory = _verseHistory.value + newIndex
+        _verseHistory.value = newHistory
+        _historyIndex.value = newHistory.lastIndex
         _currentVerse.value = _verses.value[newIndex]
     }
 
