@@ -134,7 +134,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
             val initialVerse = _pendingVerseFromNotification.value
             if (initialVerse != null) {
-                showInitialVerse(initialVerse)
+                // This call handles adding the notification verse to history
+                handleNotificationVerse(initialVerse)
                 _pendingVerseFromNotification.value = null
             } else {
                 showInitialVerse()
@@ -148,8 +149,18 @@ class MainViewModel(private val application: Application) : ViewModel() {
         if (_verses.value.isEmpty()) {
             _pendingVerseFromNotification.value = verse
         } else {
-            showInitialVerse(verse)
+            // If data is already loaded, handle the notification verse immediately
+            handleNotificationVerse(verse)
         }
+    }
+
+    // New function to correctly handle history for notification verses
+    private fun handleNotificationVerse(verse: Verse) {
+        val index = verseToIndexMap[verse] ?: return // Verse not found
+        val newHistory = _verseHistory.value + index
+        _verseHistory.value = newHistory
+        _historyIndex.value = newHistory.lastIndex
+        _currentVerse.value = _verses.value.getOrNull(index)
     }
 
     fun showInitialVerse(verseToShow: Verse? = null) {

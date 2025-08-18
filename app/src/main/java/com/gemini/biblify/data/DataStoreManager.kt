@@ -25,7 +25,7 @@ class DataStoreManager(private val context: Context) {
     }
 
     fun getTheme(): Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[THEME_KEY] ?: "dark"
+        preferences[THEME_KEY] ?: "light" // Светлая тема по умолчанию
     }
 
     suspend fun saveTheme(theme: String) {
