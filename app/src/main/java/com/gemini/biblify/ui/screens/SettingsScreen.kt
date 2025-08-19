@@ -1,4 +1,3 @@
-// --- Файл: ui/screens/SettingsScreen.kt ---
 package com.gemini.biblify.ui.screens
 
 import android.Manifest
@@ -20,8 +19,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.android.billingclient.api.ProductDetails
 import com.gemini.biblify.viewmodel.MainViewModel
+
+@Composable
+private fun DonationDialog(
+    products: List<ProductDetails>,
+    onDismiss: () -> Unit,
+    onDonateClick: (ProductDetails) -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "Support Developer",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Your contribution helps keep the app ad-free.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Горизонтальный скролл для кнопок доната
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
+                    items(products) { product ->
+                        Button(onClick = { onDonateClick(product) }) {
+                            Text("${product.name} (${product.oneTimePurchaseOfferDetails?.formattedPrice})")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = onDismiss) {
+                    Text("Close")
+                }
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +80,8 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
     val donationProducts by viewModel.donationProducts.collectAsState()
     val billingMessage by viewModel.billingMessage.collectAsState()
 
+    var showDonationDialog by remember { mutableStateOf(false) }
+
     var notificationsEnabled by remember(notificationSettings.enabled) { mutableStateOf(notificationSettings.enabled) }
     var notificationHour by remember(notificationSettings.hour) { mutableStateOf(notificationSettings.hour) }
     var notificationMinute by remember(notificationSettings.minute) { mutableStateOf(notificationSettings.minute) }
@@ -42,7 +89,19 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
     val context = LocalContext.current
     val activity = (context as? Activity)
 
-    // Показываем сообщение о результате покупки
+    if (showDonationDialog) {
+        DonationDialog(
+            products = donationProducts,
+            onDismiss = { showDonationDialog = false },
+            onDonateClick = { product ->
+                if (activity != null) {
+                    viewModel.initiateDonation(activity, product)
+                }
+                showDonationDialog = false
+            }
+        )
+    }
+
     LaunchedEffect(billingMessage) {
         billingMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -145,20 +204,13 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             // --- Секция для донатов ---
             Text("Support App Developer", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            if (donationProducts.isEmpty()) {
-                Text("Loading donation options...", style = MaterialTheme.typography.bodyMedium)
-            } else {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(donationProducts) { product ->
-                        Button(onClick = {
-                            if (activity != null) {
-                                viewModel.initiateDonation(activity, product)
-                            }
-                        }) {
-                            Text("${product.name} (${product.oneTimePurchaseOfferDetails?.formattedPrice})")
-                        }
-                    }
-                }
+            Button(
+                onClick = { showDonationDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                // Кнопка неактивна, пока товары не загружены
+                enabled = donationProducts.isNotEmpty()
+            ) {
+                Text("Make a Donation")
             }
         }
     }
