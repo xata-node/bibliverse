@@ -1,4 +1,4 @@
-package com.gemini.biblify.ui.theme
+package com.gemini.bibliverse.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

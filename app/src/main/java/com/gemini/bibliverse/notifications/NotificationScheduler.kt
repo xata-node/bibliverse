@@ -1,4 +1,4 @@
-package com.gemini.biblify.notifications
+package com.gemini.bibliverse.notifications
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -42,7 +42,7 @@ class NotificationScheduler(private val context: Context) {
                 calendar.timeInMillis,
                 pendingIntent
             )
-            Log.d("BiblifyScheduler", "Exact alarm scheduled for: $hour:$minute")
+            Log.d("BibliverseScheduler", "Exact alarm scheduled for: $hour:$minute")
         } else {
             // Запасной вариант
             alarmManager.setWindow(
@@ -51,7 +51,7 @@ class NotificationScheduler(private val context: Context) {
                 15 * 60 * 1000, // 15-минутное окно
                 pendingIntent
             )
-            Log.d("BiblifyScheduler", "Inexact alarm scheduled for: $hour:$minute")
+            Log.d("BibliverseScheduler", "Inexact alarm scheduled for: $hour:$minute")
         }
     }
 
@@ -65,7 +65,7 @@ class NotificationScheduler(private val context: Context) {
         )
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
-            Log.d("BiblifyScheduler", "Alarm canceled.")
+            Log.d("BibliverseScheduler", "Alarm canceled.")
         }
     }
 

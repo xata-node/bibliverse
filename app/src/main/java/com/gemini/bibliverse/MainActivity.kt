@@ -1,5 +1,5 @@
 // --- Файл: MainActivity.kt ---
-package com.gemini.biblify
+package com.gemini.bibliverse
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,12 +12,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import com.gemini.biblify.data.DataStoreManager
-import com.gemini.biblify.data.Verse
-import com.gemini.biblify.ui.navigation.BiblifyNavHost
-import com.gemini.biblify.ui.theme.BiblifyTheme
-import com.gemini.biblify.viewmodel.MainViewModel
-import com.gemini.biblify.viewmodel.ViewModelFactory
+import com.gemini.bibliverse.data.DataStoreManager
+import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.ui.navigation.BibliverseNavHost
+import com.gemini.bibliverse.ui.theme.BibliverseTheme
+import com.gemini.bibliverse.viewmodel.MainViewModel
+import com.gemini.bibliverse.viewmodel.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private lateinit var dataStoreManager: DataStoreManager
@@ -36,12 +36,12 @@ class MainActivity : ComponentActivity() {
             val currentTheme by dataStoreManager.getTheme().collectAsState(initial = "dark")
             val isDarkTheme = currentTheme == "dark"
 
-            BiblifyTheme(darkTheme = isDarkTheme) {
+            BibliverseTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    BiblifyNavHost(viewModel = viewModel)
+                    BibliverseNavHost(viewModel = viewModel)
                 }
             }
         }

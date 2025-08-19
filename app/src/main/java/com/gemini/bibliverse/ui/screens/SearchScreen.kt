@@ -1,4 +1,4 @@
-package com.gemini.biblify.ui.screens
+package com.gemini.bibliverse.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,9 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.gemini.biblify.data.Verse
-import com.gemini.biblify.viewmodel.MainViewModel
-import com.gemini.biblify.viewmodel.SearchResult
+import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

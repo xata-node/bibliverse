@@ -1,15 +1,15 @@
-// --- Файл: ui/navigation/BiblifyNavHost.kt ---
-package com.gemini.biblify.ui.navigation
+// --- Файл: ui/navigation/BibliverseNavHost.kt ---
+package com.gemini.bibliverse.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.gemini.biblify.ui.screens.FavoritesScreen
-import com.gemini.biblify.ui.screens.MainScreen
-import com.gemini.biblify.ui.screens.SearchScreen
-import com.gemini.biblify.ui.screens.SettingsScreen
-import com.gemini.biblify.viewmodel.MainViewModel
+import com.gemini.bibliverse.ui.screens.FavoritesScreen
+import com.gemini.bibliverse.ui.screens.MainScreen
+import com.gemini.bibliverse.ui.screens.SearchScreen
+import com.gemini.bibliverse.ui.screens.SettingsScreen
+import com.gemini.bibliverse.viewmodel.MainViewModel
 
 // Определяем маршруты
 sealed class Screen(val route: String) {
@@ -20,7 +20,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun BiblifyNavHost(viewModel: MainViewModel) {
+fun BibliverseNavHost(viewModel: MainViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.Main.route) {
         composable(Screen.Main.route) {

@@ -1,4 +1,4 @@
-package com.gemini.biblify.viewmodel
+package com.gemini.bibliverse.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

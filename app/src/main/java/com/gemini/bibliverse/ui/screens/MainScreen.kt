@@ -1,4 +1,4 @@
-package com.gemini.biblify.ui.screens
+package com.gemini.bibliverse.ui.screens
 
 import android.content.Context
 import android.content.Intent
@@ -25,9 +25,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.gemini.biblify.data.Verse
-import com.gemini.biblify.ui.navigation.Screen
-import com.gemini.biblify.viewmodel.MainViewModel
+import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.ui.navigation.Screen
+import com.gemini.bibliverse.viewmodel.MainViewModel
 
 // Helper function to create and launch the share intent
 private fun shareVerse(context: Context, verse: Verse) {
@@ -51,7 +51,7 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Biblify") },
+                title = { Text("Bibliverse") },
                 actions = {
                     IconButton(onClick = { verse?.let { viewModel.toggleFavorite(it) } }) {
                         Icon(

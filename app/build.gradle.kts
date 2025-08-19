@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.gemini.biblify"
+    namespace = "com.gemini.bibliverse"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.gemini.biblify"
+        applicationId = "com.gemini.bibliverse"
         minSdk = 24
         targetSdk = 34
         versionCode = 2

@@ -1,4 +1,4 @@
-package com.gemini.biblify.billing
+package com.gemini.bibliverse.billing
 
 import android.app.Activity
 import android.content.Context

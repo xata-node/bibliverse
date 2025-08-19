@@ -1,4 +1,4 @@
-package com.gemini.biblify
+package com.gemini.bibliverse
 
 import org.junit.Test
 

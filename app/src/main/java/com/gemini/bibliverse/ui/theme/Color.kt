@@ -1,4 +1,4 @@
-package com.gemini.biblify.ui.theme
+package com.gemini.bibliverse.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

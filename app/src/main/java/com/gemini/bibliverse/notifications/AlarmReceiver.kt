@@ -1,5 +1,5 @@
 // --- Файл: notifications/AlarmReceiver.kt ---
-package com.gemini.biblify.notifications
+package com.gemini.bibliverse.notifications
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,10 +9,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.gemini.biblify.MainActivity
-import com.gemini.biblify.R
-import com.gemini.biblify.data.Verse
-import com.gemini.biblify.data.VerseRepository
+import com.gemini.bibliverse.MainActivity
+import com.gemini.bibliverse.R
+import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.data.VerseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

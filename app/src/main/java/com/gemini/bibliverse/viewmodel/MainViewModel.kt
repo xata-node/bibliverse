@@ -1,4 +1,4 @@
-package com.gemini.biblify.viewmodel
+package com.gemini.bibliverse.viewmodel
 
 import android.app.Activity
 import android.app.Application
@@ -7,11 +7,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
-import com.gemini.biblify.billing.BillingManager
-import com.gemini.biblify.data.DataStoreManager
-import com.gemini.biblify.data.Verse
-import com.gemini.biblify.data.VerseRepository
-import com.gemini.biblify.notifications.NotificationScheduler
+import com.gemini.bibliverse.billing.BillingManager
+import com.gemini.bibliverse.data.DataStoreManager
+import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.data.VerseRepository
+import com.gemini.bibliverse.notifications.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow

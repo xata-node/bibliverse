@@ -1,4 +1,4 @@
-package com.gemini.biblify.data
+package com.gemini.bibliverse.data
 
 import android.content.Context
 import android.util.Log

@@ -1,4 +1,4 @@
-package com.gemini.biblify.ui.screens
+package com.gemini.bibliverse.ui.screens
 
 import android.Manifest
 import android.app.Activity
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.android.billingclient.api.ProductDetails
-import com.gemini.biblify.viewmodel.MainViewModel
+import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @Composable
 private fun DonationDialog(
@@ -73,7 +73,7 @@ private fun DonationDialog(
 fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
     val theme by viewModel.theme.collectAsState(initial = "dark")
     val notificationSettings by viewModel.notificationSettings.collectAsState(
-        initial = com.gemini.biblify.data.DataStoreManager.NotificationSettings(false, 8, 0)
+        initial = com.gemini.bibliverse.data.DataStoreManager.NotificationSettings(false, 8, 0)
     )
 
     // --- Состояния для донатов ---
