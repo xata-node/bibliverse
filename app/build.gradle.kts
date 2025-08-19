@@ -12,8 +12,8 @@ android {
         applicationId = "com.gemini.biblify"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -71,6 +71,9 @@ dependencies {
 
     // Jetpack DataStore для сохранения настроек
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Добавление библиотеки Google Play Billing
+    implementation("com.android.billingclient:billing-ktx:6.1.0")
 
     // Тестирование
     testImplementation("junit:junit:4.13.2")

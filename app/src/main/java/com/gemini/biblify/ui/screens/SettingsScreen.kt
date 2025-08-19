@@ -2,12 +2,16 @@
 package com.gemini.biblify.ui.screens
 
 import android.Manifest
+import android.app.Activity
 import android.app.TimePickerDialog
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -27,12 +31,24 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
         initial = com.gemini.biblify.data.DataStoreManager.NotificationSettings(false, 8, 0)
     )
 
+    // --- Состояния для донатов ---
+    val donationProducts by viewModel.donationProducts.collectAsState()
+    val billingMessage by viewModel.billingMessage.collectAsState()
+
     var notificationsEnabled by remember(notificationSettings.enabled) { mutableStateOf(notificationSettings.enabled) }
     var notificationHour by remember(notificationSettings.hour) { mutableStateOf(notificationSettings.hour) }
     var notificationMinute by remember(notificationSettings.minute) { mutableStateOf(notificationSettings.minute) }
 
     val context = LocalContext.current
+    val activity = (context as? Activity)
 
+    // Показываем сообщение о результате покупки
+    LaunchedEffect(billingMessage) {
+        billingMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.clearBillingMessage()
+        }
+    }
     // FIX 1.4: Запрос разрешения на уведомления для Android 13+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -121,6 +137,27 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+
+            Divider(modifier = Modifier.padding(vertical = 16.dp))
+
+            // --- Секция для донатов ---
+            Text("Support App Developer", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            if (donationProducts.isEmpty()) {
+                Text("Loading donation options...", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(donationProducts) { product ->
+                        Button(onClick = {
+                            if (activity != null) {
+                                viewModel.initiateDonation(activity, product)
+                            }
+                        }) {
+                            Text("${product.name} (${product.oneTimePurchaseOfferDetails?.formattedPrice})")
+                        }
+                    }
                 }
             }
         }

@@ -1,10 +1,13 @@
 package com.gemini.biblify.viewmodel
 
+import android.app.Activity
 import android.app.Application
 import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.billingclient.api.ProductDetails
+import com.gemini.biblify.billing.BillingManager
 import com.gemini.biblify.data.DataStoreManager
 import com.gemini.biblify.data.Verse
 import com.gemini.biblify.data.VerseRepository
@@ -27,6 +30,11 @@ class MainViewModel(private val application: Application) : ViewModel() {
     private val repository = VerseRepository(application)
     private val dataStoreManager = DataStoreManager(application)
     private val notificationScheduler = NotificationScheduler(application)
+
+    // --- ИНТЕГРАЦИЯ BILLING MANAGER ---
+    private val billingManager = BillingManager(application)
+    val donationProducts = billingManager.products
+    val billingMessage = billingManager.message
 
     private val _verses = MutableStateFlow<List<Verse>>(emptyList())
     private var verseToIndexMap: Map<Verse, Int> = emptyMap()
@@ -109,6 +117,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     init {
         loadData()
+        billingManager.startConnection() // Запускаем подключение к биллингу Google Play
     }
 
     private fun loadData() {
@@ -245,6 +254,15 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    // --- Функции для донатов ---
+    fun initiateDonation(activity: Activity, productDetails: ProductDetails) {
+        billingManager.launchPurchaseFlow(activity, productDetails)
+    }
+
+    fun clearBillingMessage() {
+        billingManager.clearMessage()
     }
 }
 
