@@ -2,8 +2,12 @@ package com.gemini.bibliverse.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,7 +114,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
         }
     }
     // FIX 1.4: Запрос разрешения на уведомления для Android 13+
-    val launcher = rememberLauncherForActivityResult(
+    val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
@@ -173,10 +177,19 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                     onCheckedChange = { isChecked ->
                         if (isChecked) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                notificationsEnabled = true
+                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                             }
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                if (!alarmManager.canScheduleExactAlarms()) {
+                                    Intent().also { intent ->
+                                        intent.action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+                                        context.startActivity(intent)
+                                    }
+                                }
+                            }
+                            notificationsEnabled = true
                         } else {
                             notificationsEnabled = false
                         }
