@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -124,6 +125,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
         }
     )
 
+    val is24HourFormat = DateFormat.is24HourFormat(context)
     val timePickerDialog = TimePickerDialog(
         context,
         { _, hour: Int, minute: Int ->
@@ -131,7 +133,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             notificationMinute = minute
             // Устанавливаем уведомление сразу после выбора времени
             viewModel.setNotifications(true, hour, minute)
-        }, notificationHour, notificationMinute, true
+        }, notificationHour, notificationMinute, is24HourFormat
     )
 
     Scaffold(
