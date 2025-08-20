@@ -12,8 +12,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,8 +84,8 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
     var showDonationDialog by remember { mutableStateOf(false) }
 
     var notificationsEnabled by remember(notificationSettings.enabled) { mutableStateOf(notificationSettings.enabled) }
-    var notificationHour by remember(notificationSettings.hour) { mutableStateOf(notificationSettings.hour) }
-    var notificationMinute by remember(notificationSettings.minute) { mutableStateOf(notificationSettings.minute) }
+    var notificationHour by remember(notificationSettings.hour) { mutableIntStateOf(notificationSettings.hour) }
+    var notificationMinute by remember(notificationSettings.minute) { mutableIntStateOf(notificationSettings.minute) }
 
     val context = LocalContext.current
     val activity = (context as? Activity)
@@ -135,7 +136,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                         viewModel.setNotifications(notificationsEnabled, notificationHour, notificationMinute)
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -157,7 +158,11 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 )
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             Text("Daily Verse Notification", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -199,7 +204,11 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             // --- Секция для донатов ---
             Text("Support App Developer", style = MaterialTheme.typography.titleMedium)
