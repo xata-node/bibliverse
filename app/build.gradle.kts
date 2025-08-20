@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.gemini.bibliverse"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.gemini.bibliverse"
