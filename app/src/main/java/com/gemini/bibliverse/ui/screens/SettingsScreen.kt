@@ -119,6 +119,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
         onResult = { isGranted ->
             if (isGranted) {
                 notificationsEnabled = true
+                viewModel.setNotifications(true, notificationHour, notificationMinute)
             }
         }
     )
@@ -128,6 +129,8 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
         { _, hour: Int, minute: Int ->
             notificationHour = hour
             notificationMinute = minute
+            // Устанавливаем уведомление сразу после выбора времени
+            viewModel.setNotifications(true, hour, minute)
         }, notificationHour, notificationMinute, true
     )
 
@@ -136,10 +139,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             TopAppBar(
                 title = { Text("Settings") },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.setNotifications(notificationsEnabled, notificationHour, notificationMinute)
-                        navController.popBackStack()
-                    }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -175,6 +175,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 Switch(
                     checked = notificationsEnabled,
                     onCheckedChange = { isChecked ->
+                        notificationsEnabled = isChecked
                         if (isChecked) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -189,9 +190,11 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                                     }
                                 }
                             }
-                            notificationsEnabled = true
+                            // Устанавливаем уведомление с текущим временем
+                            viewModel.setNotifications(true, notificationHour, notificationMinute)
                         } else {
-                            notificationsEnabled = false
+                            // Отменяем уведомление сразу
+                            viewModel.setNotifications(false, notificationHour, notificationMinute)
                         }
                     }
                 )
