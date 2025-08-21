@@ -1,4 +1,3 @@
-// --- НОВЫЙ ФАЙЛ: ui/screens/AffirmationsScreen.kt ---
 package com.gemini.bibliverse.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -8,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,12 +19,14 @@ import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @Composable
-private fun AddAffirmationDialog(
+private fun AddOrEditAffirmationDialog(
+    affirmationToEdit: Verse?, // Pass null for adding, existing verse for editing
     onDismiss: () -> Unit,
-    onAdd: (text: String, reference: String) -> Unit
+    onConfirm: (text: String, reference: String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
-    var reference by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(affirmationToEdit?.text ?: "") }
+    var reference by remember { mutableStateOf(affirmationToEdit?.reference ?: "") }
+    val isEditing = affirmationToEdit != null
 
     Dialog(onDismissRequest = onDismiss) {
         Card(shape = MaterialTheme.shapes.large) {
@@ -32,7 +34,10 @@ private fun AddAffirmationDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Add New Affirmation", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    if (isEditing) "Edit Affirmation" else "Add New Affirmation",
+                    style = MaterialTheme.typography.headlineSmall
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = text,
@@ -57,10 +62,10 @@ private fun AddAffirmationDialog(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = { onAdd(text, reference.ifBlank { "(Affirmation)" }) },
+                        onClick = { onConfirm(text, reference.ifBlank { "(Affirmation)" }) },
                         enabled = text.isNotBlank()
                     ) {
-                        Text("Add")
+                        Text(if (isEditing) "Save" else "Add")
                     }
                 }
             }
@@ -72,14 +77,24 @@ private fun AddAffirmationDialog(
 @Composable
 fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
     val affirmations by viewModel.affirmations.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
+    var affirmationToEdit by remember { mutableStateOf<Verse?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
 
-    if (showAddDialog) {
-        AddAffirmationDialog(
-            onDismiss = { showAddDialog = false },
-            onAdd = { text, reference ->
-                viewModel.addAffirmation(text, reference)
-                showAddDialog = false
+    if (showDialog) {
+        AddOrEditAffirmationDialog(
+            affirmationToEdit = affirmationToEdit,
+            onDismiss = {
+                showDialog = false
+                affirmationToEdit = null // Clear selection on dismiss
+            },
+            onConfirm = { text, reference ->
+                if (affirmationToEdit != null) {
+                    viewModel.editAffirmation(affirmationToEdit!!, text, reference)
+                } else {
+                    viewModel.addAffirmation(text, reference)
+                }
+                showDialog = false
+                affirmationToEdit = null
             }
         )
     }
@@ -96,7 +111,10 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
+            FloatingActionButton(onClick = {
+                affirmationToEdit = null // Ensure we are in "add" mode
+                showDialog = true
+            }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Affirmation")
             }
         }
@@ -117,6 +135,10 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
                 items(affirmations, key = { it.text + it.reference }) { affirmation ->
                     AffirmationItem(
                         affirmation = affirmation,
+                        onEdit = {
+                            affirmationToEdit = it
+                            showDialog = true
+                        },
                         onRemove = { viewModel.removeAffirmation(it) }
                     )
                 }
@@ -126,12 +148,16 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
 }
 
 @Composable
-fun AffirmationItem(affirmation: Verse, onRemove: (Verse) -> Unit) {
+fun AffirmationItem(
+    affirmation: Verse,
+    onEdit: (Verse) -> Unit,
+    onRemove: (Verse) -> Unit
+) {
     Card(elevation = CardDefaults.cardElevation(2.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -139,6 +165,11 @@ fun AffirmationItem(affirmation: Verse, onRemove: (Verse) -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(affirmation.reference, style = MaterialTheme.typography.bodySmall)
             }
+            // Edit Button
+            IconButton(onClick = { onEdit(affirmation) }) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit Affirmation")
+            }
+            // Remove Button
             IconButton(onClick = { onRemove(affirmation) }) {
                 Icon(Icons.Default.Delete, contentDescription = "Remove Affirmation")
             }

@@ -178,17 +178,23 @@ class MainViewModel(private val application: Application) : ViewModel() {
     }
 
     fun showInitialVerse(verseToShow: Verse? = null) {
-        if (_verses.value.isEmpty()) return
+        viewModelScope.launch {
+            if (_verses.value.isEmpty()) return@launch
 
-        val index = if (verseToShow != null) {
-            verseToIndexMap[verseToShow]
-        } else {
-            null
-        } ?: Random.nextInt(_verses.value.size)
+            // FIX 1: Check if affirmations are enabled before selecting the initial verse
+            val affirmationsAreEnabled = affirmationsEnabled.first()
+            val verseList = if (affirmationsAreEnabled) _verses.value else _verses.value.filter { !it.isAffirmation }
 
-        _currentVerse.value = _verses.value.getOrNull(index)
-        _verseHistory.value = listOf(index)
-        _historyIndex.value = 0
+            val index = if (verseToShow != null) {
+                verseToIndexMap[verseToShow]
+            } else {
+                verseToIndexMap[verseList.random()]
+            } ?: Random.nextInt(_verses.value.size)
+
+            _currentVerse.value = _verses.value.getOrNull(index)
+            _verseHistory.value = listOf(index)
+            _historyIndex.value = 0
+        }
     }
 
     fun fetchAndShowNewVerse() {
@@ -305,6 +311,22 @@ class MainViewModel(private val application: Application) : ViewModel() {
             // --- OPTIMIZED UPDATE ---
             _affirmations.value = updatedAffirmations
             _verses.value = _verses.value.filter { it != affirmation }
+            verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
+        }
+    }
+
+    fun editAffirmation(oldAffirmation: Verse, newText: String, newReference: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val newAffirmation = Verse(newText, newReference, isAffirmation = true)
+            val updatedAffirmations = _affirmations.value.map {
+                if (it == oldAffirmation) newAffirmation else it
+            }
+            repository.saveAffirmations(updatedAffirmations)
+
+            _affirmations.value = updatedAffirmations
+            _verses.value = _verses.value.map {
+                if (it == oldAffirmation) newAffirmation else it
+            }
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
         }
     }
