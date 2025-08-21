@@ -290,8 +290,10 @@ class MainViewModel(private val application: Application) : ViewModel() {
             val updatedAffirmations = _affirmations.value + newAffirmation
             repository.saveAffirmations(updatedAffirmations)
 
-            // Reload all data to ensure consistency
-            loadData()
+            // --- OPTIMIZED UPDATE ---
+            _affirmations.value = updatedAffirmations
+            _verses.value = _verses.value + newAffirmation
+            verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
         }
     }
 
@@ -300,8 +302,10 @@ class MainViewModel(private val application: Application) : ViewModel() {
             val updatedAffirmations = _affirmations.value.filter { it != affirmation }
             repository.saveAffirmations(updatedAffirmations)
 
-            // Reload all data to ensure consistency
-            loadData()
+            // --- OPTIMIZED UPDATE ---
+            _affirmations.value = updatedAffirmations
+            _verses.value = _verses.value.filter { it != affirmation }
+            verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
         }
     }
 }
