@@ -1,10 +1,10 @@
-// --- Файл: ui/navigation/BibliverseNavHost.kt ---
 package com.gemini.bibliverse.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gemini.bibliverse.ui.screens.AffirmationsScreen
 import com.gemini.bibliverse.ui.screens.FavoritesScreen
 import com.gemini.bibliverse.ui.screens.MainScreen
 import com.gemini.bibliverse.ui.screens.SearchScreen
@@ -17,6 +17,7 @@ sealed class Screen(val route: String) {
     object Favorites : Screen("favorites")
     object Settings : Screen("settings")
     object Search : Screen("search") // Новый маршрут для поиска
+    object Affirmations : Screen("affirmations") // New route
 }
 
 @Composable
@@ -34,7 +35,10 @@ fun BibliverseNavHost(viewModel: MainViewModel) {
         }
         // Новый экран поиска
         composable(Screen.Search.route) {
-            SearchScreen(viewModel = viewModel, navController = navController)
+            SearchScreen(navController = navController, viewModel = viewModel)
+        }
+        composable(Screen.Affirmations.route) {
+            AffirmationsScreen(viewModel = viewModel, navController = navController)
         }
     }
 }

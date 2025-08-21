@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,9 +39,12 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     private val _verses = MutableStateFlow<List<Verse>>(emptyList())
     private var verseToIndexMap: Map<Verse, Int> = emptyMap()
-
-    // --- НОВЫЙ БЫСТРЫЙ ИНДЕКС ДЛЯ ПОИСКА ПО ССЫЛКАМ ---
     private var referenceSearchIndex: Map<String, List<Verse>> = emptyMap()
+
+    // --- Affirmations State ---
+    private val _affirmations = MutableStateFlow<List<Verse>>(emptyList())
+    val affirmations = _affirmations.asStateFlow()
+    val affirmationsEnabled = dataStoreManager.getAffirmationsEnabled()
 
     private val _currentVerse = MutableStateFlow<Verse?>(null)
     val currentVerse = _currentVerse.asStateFlow()
@@ -123,20 +127,21 @@ class MainViewModel(private val application: Application) : ViewModel() {
     private fun loadData() {
         viewModelScope.launch(Dispatchers.IO) {
             _isSearching.value = true
-            _verses.value = repository.loadVerses()
-            verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
+            val allVerses = repository.loadVerses() // This now loads both
+            _verses.value = allVerses
+            _affirmations.value = allVerses.filter { it.isAffirmation } // Separate affirmations
 
-            // --- СОЗДАНИЕ БЫСТРОГО ИНДЕКСА ДЛЯ ССЫЛОК ---
-            referenceSearchIndex = _verses.value.groupBy { verse ->
+            verseToIndexMap = allVerses.withIndex().associate { (i, v) -> v to i }
+
+            val refIndex = allVerses.groupBy { verse ->
                 verse.reference.lowercase()
-                    .substringAfter(" ") // Берем только "2:2" из "Genesis 2:2"
+                    .substringAfter(" ")
             }
-            // Также добавляем поиск только по главе, например "2"
-            val chapters = _verses.value.groupBy { it.reference.lowercase().substringAfter(" ").substringBefore(":") }
+            val chapters = allVerses.groupBy { it.reference.lowercase().substringAfter(" ").substringBefore(":") }
 
-            val combinedIndex = referenceSearchIndex.toMutableMap()
-            chapters.forEach { (chapter, verses) ->
-                combinedIndex[chapter] = verses
+            val combinedIndex = refIndex.toMutableMap()
+            chapters.forEach { (chapter, verseList) ->
+                combinedIndex[chapter] = verseList
             }
 
             referenceSearchIndex = combinedIndex
@@ -187,17 +192,24 @@ class MainViewModel(private val application: Application) : ViewModel() {
     }
 
     fun fetchAndShowNewVerse() {
-        if (_verses.value.size <= 1) return
-        val currentVerseIndex = verseToIndexMap[_currentVerse.value]
-        var newIndex: Int
-        do {
-            newIndex = Random.nextInt(_verses.value.size)
-        } while (newIndex == currentVerseIndex)
+        viewModelScope.launch {
+            val affirmationsAreEnabled = affirmationsEnabled.first()
+            val verseList = if (affirmationsAreEnabled) _verses.value else _verses.value.filter { !it.isAffirmation }
 
-        val newHistory = _verseHistory.value + newIndex
-        _verseHistory.value = newHistory
-        _historyIndex.value = newHistory.lastIndex
-        _currentVerse.value = _verses.value[newIndex]
+            if (verseList.size <= 1) return@launch
+
+            val currentVerseIndex = verseToIndexMap[_currentVerse.value]
+            var newIndex: Int
+            do {
+                val randomVerse = verseList.random()
+                newIndex = verseToIndexMap[randomVerse] ?: -1
+            } while (newIndex == currentVerseIndex || newIndex == -1)
+
+            val newHistory = _verseHistory.value + newIndex
+            _verseHistory.value = newHistory
+            _historyIndex.value = newHistory.lastIndex
+            _currentVerse.value = _verses.value[newIndex]
+        }
     }
 
     fun showNextVerse() {
@@ -263,6 +275,34 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     fun clearBillingMessage() {
         billingManager.clearMessage()
+    }
+
+    // --- Affirmations Logic ---
+    fun setAffirmationsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreManager.saveAffirmationsEnabled(enabled)
+        }
+    }
+
+    fun addAffirmation(text: String, reference: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val newAffirmation = Verse(text, reference, isAffirmation = true)
+            val updatedAffirmations = _affirmations.value + newAffirmation
+            repository.saveAffirmations(updatedAffirmations)
+
+            // Reload all data to ensure consistency
+            loadData()
+        }
+    }
+
+    fun removeAffirmation(affirmation: Verse) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val updatedAffirmations = _affirmations.value.filter { it != affirmation }
+            repository.saveAffirmations(updatedAffirmations)
+
+            // Reload all data to ensure consistency
+            loadData()
+        }
     }
 }
 

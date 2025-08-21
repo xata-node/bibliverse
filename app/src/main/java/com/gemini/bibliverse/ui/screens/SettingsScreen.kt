@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.android.billingclient.api.ProductDetails
+import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @Composable
@@ -77,10 +78,11 @@ private fun DonationDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
-    val theme by viewModel.theme.collectAsState(initial = "dark")
+    val theme by viewModel.theme.collectAsState(initial = "light")
     val notificationSettings by viewModel.notificationSettings.collectAsState(
         initial = com.gemini.bibliverse.data.DataStoreManager.NotificationSettings(false, 8, 0)
     )
+    val affirmationsEnabled by viewModel.affirmationsEnabled.collectAsState(initial = true)
 
     // --- Состояния для донатов ---
     val donationProducts by viewModel.donationProducts.collectAsState()
@@ -164,11 +166,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 )
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
-            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             Text("Daily Verse Notification", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -222,12 +220,29 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 }
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
-            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
+            // --- Affirmations Section ---
+            Text("User Affirmations", style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Enable my affirmations")
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = affirmationsEnabled,
+                    onCheckedChange = { viewModel.setAffirmationsEnabled(it) }
+                )
+            }
+            if (affirmationsEnabled) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { navController.navigate(Screen.Affirmations.route) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Edit My Affirmations")
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             // --- Секция для донатов ---
             Text("Support App Developer", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))

@@ -22,6 +22,8 @@ class DataStoreManager(private val context: Context) {
         val NOTIFICATIONS_ENABLED_KEY = booleanPreferencesKey("notifications_enabled")
         val NOTIFICATION_HOUR_KEY = intPreferencesKey("notification_hour")
         val NOTIFICATION_MINUTE_KEY = intPreferencesKey("notification_minute")
+        // Key for affirmations toggle
+        val AFFIRMATIONS_ENABLED_KEY = booleanPreferencesKey("affirmations_enabled")
     }
 
     fun getTheme(): Flow<String> = context.dataStore.data.map { preferences ->
@@ -61,6 +63,17 @@ class DataStoreManager(private val context: Context) {
             settings[NOTIFICATIONS_ENABLED_KEY] = enabled
             settings[NOTIFICATION_HOUR_KEY] = hour
             settings[NOTIFICATION_MINUTE_KEY] = minute
+        }
+    }
+
+    // --- Affirmations Settings ---
+    fun getAffirmationsEnabled(): Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[AFFIRMATIONS_ENABLED_KEY] ?: false // Disabled by default
+    }
+
+    suspend fun saveAffirmationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[AFFIRMATIONS_ENABLED_KEY] = enabled
         }
     }
 }
