@@ -3,6 +3,7 @@ package com.gemini.bibliverse.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
@@ -46,11 +48,18 @@ private fun AddOrEditAffirmationDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
+                TextField(
                     value = reference,
-                    onValueChange = { reference = it },
+                    onValueChange = { newValue ->
+                        // Filter out newlines to avoid issues with saving
+                        reference = newValue.replace("\n", "").replace("\r", "")
+                    },
                     label = { Text("Source (optional)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true, // Disables multi-line input
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done // Changes the 'Enter' key to 'Done' explicitly
+                    )
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
@@ -62,7 +71,8 @@ private fun AddOrEditAffirmationDialog(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = { onConfirm(text, reference.ifBlank { "(Affirmation)" }) },
+                        // Ensure the reference is trimmed of leading/trailing spaces
+                        onClick = { onConfirm(text.trim(), reference.trim()) },
                         enabled = text.isNotBlank()
                     ) {
                         Text(if (isEditing) "Save" else "Add")
@@ -163,7 +173,9 @@ fun AffirmationItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(affirmation.text, style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(affirmation.reference, style = MaterialTheme.typography.bodySmall)
+                if(affirmation.reference.isNotBlank()) {
+                    Text(affirmation.reference, style = MaterialTheme.typography.bodySmall)
+                }
             }
             // Edit Button
             IconButton(onClick = { onEdit(affirmation) }) {

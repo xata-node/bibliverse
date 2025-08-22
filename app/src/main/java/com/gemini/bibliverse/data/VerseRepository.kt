@@ -80,13 +80,15 @@ class VerseRepository(private val context: Context) {
             blocks.forEach { block ->
                 val lines = block.lines().filter { it.isNotBlank() }
                 if (lines.isNotEmpty()) {
-                    // Ищем строку, которая начинается со скобки, для ссылки
-                    val verseReference = lines.find { it.startsWith("(") && it.endsWith(")") } ?: "(Affirmation)"
-                    // Объединяем остальные строки в текст стиха
+                    // Find line that is enclosed in double parenthesis and use it as reference
+                    val verseReference = lines.find { it.startsWith("((") && it.endsWith("))") } ?: "(())"
+                    // Join the rest of the lines to form the verse text
                     val verseText = lines.filter { it != verseReference }.joinToString("\n").trim()
 
                     if (verseText.isNotEmpty()) {
-                        affirmations.add(Verse(text = verseText, reference = verseReference, isAffirmation = true))
+                        // Provide a clean reference to the app
+                        val cleanReference = verseReference.removeSurrounding("((", "))")
+                        affirmations.add(Verse(text = verseText, reference = cleanReference, isAffirmation = true))
                     }
                 }
             }
@@ -103,7 +105,8 @@ class VerseRepository(private val context: Context) {
                 affirmations.forEachIndexed { index, verse ->
                     writer.write(verse.text)
                     writer.write("\n")
-                    writer.write(verse.reference)
+                    // Ensure the reference is always wrapped in double parentheses when saving
+                    writer.write("((${verse.reference}))")
                     if (index < affirmations.size - 1) {
                         writer.write("\n\n")
                     }
