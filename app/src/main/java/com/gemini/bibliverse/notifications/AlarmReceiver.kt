@@ -11,10 +11,12 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.gemini.bibliverse.MainActivity
 import com.gemini.bibliverse.R
+import com.gemini.bibliverse.data.DataStoreManager
 import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.data.VerseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -22,8 +24,17 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val repository = VerseRepository(context)
+        val dataStoreManager = DataStoreManager(context)
+
         CoroutineScope(Dispatchers.IO).launch {
-            val verses = repository.loadVerses()
+            val affirmationsEnabled = dataStoreManager.getAffirmationsEnabled().first()
+
+            val verses = if (affirmationsEnabled) {
+                repository.loadVerses()
+            } else {
+                repository.loadBibleVerses()
+            }
+
             if (verses.isNotEmpty()) {
                 val randomVerse = verses[Random.nextInt(verses.size)]
                 showNotification(context, randomVerse)

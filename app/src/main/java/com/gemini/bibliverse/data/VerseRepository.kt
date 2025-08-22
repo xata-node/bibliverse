@@ -9,7 +9,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 
-// Репозиторий для загрузки стихов из ассетов
+// Repository for loading verses from files
 class VerseRepository(private val context: Context) {
 
     private val versesFileName = "kjv-scriptures.txt"
@@ -17,25 +17,11 @@ class VerseRepository(private val context: Context) {
 
     suspend fun loadVerses(): List<Verse> = withContext(Dispatchers.IO) {
         val verses = mutableListOf<Verse>()
-        // Загрузка стихов из Библии
-        try {
-            context.assets.open(versesFileName).use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream)).forEachLine { line ->
-                    val parts = line.split("    ", limit = 2)
-                    if (parts.size == 2) {
-                        verses.add(Verse(text = parts[1].trim(), reference = parts[0].trim()))
-                    }
-                }
-            }
-            Log.d("VerseRepository", "Loaded ${verses.size} Bible verses.")
-        } catch (e: Exception) {
-            // Обработка ошибки, если файл не найден
-            Log.e("VerseRepository", "Error loading kjv-scriptures.txt", e)
-        }
 
-        // --- NEW AFFIRMATIONS LOGIC ---
+        verses.addAll(loadBibleVerses())
+        // Load user affirmations
         val startCount = verses.size
-        verses.addAll(loadAffirmationsFromFile())
+        verses.addAll(loadAffirmations())
         Log.d("VerseRepository", "Loaded ${verses.size - startCount} affirmations.")
 
         if (verses.isEmpty()) {
@@ -46,9 +32,29 @@ class VerseRepository(private val context: Context) {
         verses
     }
 
+    suspend fun loadBibleVerses(): List<Verse> = withContext(Dispatchers.IO) {
+        val bibleVerses = mutableListOf<Verse>()
+
+        try {
+            context.assets.open(versesFileName).use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream)).forEachLine { line ->
+                    val parts = line.split("    ", limit = 2)
+                    if (parts.size == 2) {
+                        bibleVerses.add(Verse(text = parts[1].trim(), reference = parts[0].trim()))
+                    }
+                }
+            }
+            Log.d("VerseRepository", "Loaded ${bibleVerses.size} Bible verses.")
+        } catch (e: Exception) {
+            Log.e("VerseRepository", "Error loading kjv-scriptures.txt", e)
+        }
+
+        bibleVerses
+    }
+
     // This function reads affirmations from internal storage.
     // If the file doesn't exist, it copies it from assets first.
-    private fun loadAffirmationsFromFile(): List<Verse> {
+    private fun loadAffirmations(): List<Verse> {
         val affirmations = mutableListOf<Verse>()
         val file = File(context.filesDir, affirmationsFileName)
 
