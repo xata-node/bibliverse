@@ -1,6 +1,6 @@
 [versions]
 agp = "8.12.1"
-billingKtx = "6.1.0"
+billingKtx = "8.0.0"
 datastorePreferences = "1.1.7"
 kotlin = "2.2.10"
 coreKtx = "1.17.0"

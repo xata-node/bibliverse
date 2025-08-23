@@ -32,7 +32,7 @@ class BillingManager(context: Context) {
     // Инициализация BillingClient
     private var billingClient = BillingClient.newBuilder(context)
         .setListener(purchasesUpdatedListener)
-        .enablePendingPurchases()
+        .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
         .build()
 
     // Установка соединения с Google Play
@@ -68,10 +68,10 @@ class BillingManager(context: Context) {
 
         val params = QueryProductDetailsParams.newBuilder().setProductList(productList)
 
-        billingClient.queryProductDetailsAsync(params.build()) { billingResult, productDetailsList ->
+        billingClient.queryProductDetailsAsync(params.build()) { billingResult, productDetailsResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _products.value = productDetailsList
-                Log.d("BillingManager", "Products queried: ${productDetailsList.size}")
+                _products.value = productDetailsResult.productDetailsList
+                Log.d("BillingManager", "Products queried: ${productDetailsResult.productDetailsList.size}")
             } else {
                 Log.e("BillingManager", "Failed to query products: ${billingResult.debugMessage}")
             }
