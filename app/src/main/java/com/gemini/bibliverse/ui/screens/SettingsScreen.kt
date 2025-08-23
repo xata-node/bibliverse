@@ -82,7 +82,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
     val notificationSettings by viewModel.notificationSettings.collectAsState(
         initial = com.gemini.bibliverse.data.DataStoreManager.NotificationSettings(false, 8, 0)
     )
-    val affirmationsEnabled by viewModel.affirmationsEnabled.collectAsState(initial = true)
+    val affirmationsEnabled by viewModel.affirmationsEnabled.collectAsState(initial = false)
 
     // --- Состояния для донатов ---
     val donationProducts by viewModel.donationProducts.collectAsState()
@@ -202,7 +202,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
 
             // FIX 1.1: Показываем диалог выбора времени
             if (notificationsEnabled) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -225,7 +225,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             // --- Affirmations Section ---
             Text("User Affirmations", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Enable my affirmations")
+                Text("Enable in verse rotation")
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = affirmationsEnabled,
@@ -233,7 +233,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
                 )
             }
             if (affirmationsEnabled) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = { navController.navigate(Screen.Affirmations.route) },
                     modifier = Modifier.fillMaxWidth()
@@ -243,6 +243,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
             // --- Секция для донатов ---
             Text("Support App Developer", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
@@ -254,6 +255,18 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             ) {
                 Text("Make a Donation")
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "About",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier
+                    .clickable { navController.navigate(Screen.About.route) }
+                    .padding(vertical = 8.dp) // Add padding for a better click target
+                    .fillMaxWidth() // Optional, keep if you want the click area to fill width
+            )
+
         }
     }
 }

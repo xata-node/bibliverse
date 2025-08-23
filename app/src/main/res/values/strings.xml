@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">Bibliverse</string>
+
+    <!-- About Screen Content -->
+    <string name="about_title">About Bibliverse</string>
+    <string name="about_description">
+        Welcome to Bibliverse, your daily inspiration.
+        This simple and minimalist app was created to share the power of Bible verses and custom affirmations.
+        This app was built to be a calm and bright companion in daily life.
+    </string>
+
+    <string name="version_title">Version</string>
+    <string name="version_number">1.0.1</string>
+
+    <string name="developer_title">Developer</string>
+    <string name="developer_name">xata-node</string>
+
+    <string name="links_title">Important Links</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="feedback">Send Feedback</string>
+
+    <string name="credits_title">Credits</string>
+    <string name="icons_source_prefix">Icons from SVG Repo</string>
+
+    <string name="privacy_policy_url">https://xata-node.github.io</string>
+    <string name="privacy_policy_url_backup">https://storage.googleapis.com/bibliverse-privacy-policy/index.html</string>
+    <string name="feedback_email">kokoroshi@protonmail.ch</string>
+    <string name="icons_url">https://www.svgrepo.com</string>
 </resources>
