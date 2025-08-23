@@ -1,0 +1,3 @@
+Public URLs for Bibliverse App Privacy Policy:
+https://xata-node.github.io/
+https://storage.googleapis.com/bibliverse-privacy-policy/index.html
