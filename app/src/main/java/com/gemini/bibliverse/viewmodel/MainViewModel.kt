@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 @OptIn(FlowPreview::class)
 class MainViewModel(private val application: Application) : ViewModel() {
@@ -69,27 +68,35 @@ class MainViewModel(private val application: Application) : ViewModel() {
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
 
-    // --- УЛУЧШЕННАЯ ЛОГИКА ПОИСКА ---
+    // --- УЛУЧШЕННАЯ ЛОГИКА ПОИСКА (IDE Agent's approach) ---
+    // This flow reactively provides the list of verses that should be searched.
+    private val searchableVerses = combine(
+        _verses,
+        affirmationsEnabled
+    ) { allVerses, areAffirmationsEnabled ->
+        if (areAffirmationsEnabled) {
+            allVerses
+        } else {
+            allVerses.filter { !it.isAffirmation }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val filteredVerses = searchQuery
-        .debounce(300) // Небольшая задержка перед началом поиска
-        .combine(_verses) { query, verseList ->
-            if (query.isBlank()) {
-                _isSearching.value = false
-                return@combine emptyList<Verse>()
-            }
-            if (verseList.isEmpty()) {
+        .debounce(300)
+        .combine(searchableVerses) { query, verseList -> // Search the pre-filtered list
+            if (query.isBlank() || verseList.isEmpty()) {
                 _isSearching.value = false
                 return@combine emptyList<Verse>()
             }
 
+            _isSearching.value = true
             val startTime = System.currentTimeMillis()
             val trimmedQuery = query.trim().lowercase()
-            _isSearching.value = true
 
             // Шаг 1: Поиск в быстром индексе по ссылкам (главы и стихи)
             val referenceResults = referenceSearchIndex[trimmedQuery]
             val results = if (referenceResults != null) {
-                referenceResults
+                referenceResults.filter { verse -> verse in verseList } // Ensure result is in the searchable list
             } else {
                 // Шаг 2: Если в быстром индексе нет, делаем обычный текстовый поиск
                 verseList.filter { verse ->
@@ -160,11 +167,13 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     private val _pendingVerseFromNotification = MutableStateFlow<Verse?>(null)
     fun setVerseFromNotification(verse: Verse) {
-        if (_verses.value.isEmpty()) {
-            _pendingVerseFromNotification.value = verse
-        } else {
+        if (_verses.value.isNotEmpty()) {
             // If data is already loaded, handle the notification verse immediately
             handleNotificationVerse(verse)
+            //_pendingVerseFromNotification.value = null // Clear it once handled
+        } else {
+            // If data is not yet loaded, store it to be processed by loadData later.
+            _pendingVerseFromNotification.value = verse
         }
     }
 
@@ -185,14 +194,20 @@ class MainViewModel(private val application: Application) : ViewModel() {
             val affirmationsAreEnabled = affirmationsEnabled.first()
             val verseList = if (affirmationsAreEnabled) _verses.value else _verses.value.filter { !it.isAffirmation }
 
+            if (verseList.isEmpty()) {
+                Log.w("ViewModel", "Cannot show initial verse, list is empty after filtering.")
+                _currentVerse.value = null
+                return@launch
+            }
+
             val index = if (verseToShow != null) {
                 verseToIndexMap[verseToShow]
             } else {
                 verseToIndexMap[verseList.random()]
-            } ?: Random.nextInt(_verses.value.size)
+            }
 
-            _currentVerse.value = _verses.value.getOrNull(index)
-            _verseHistory.value = listOf(index)
+            _currentVerse.value = _verses.value.getOrNull(index ?: 0)
+            _verseHistory.value = listOf(index ?: 0)
             _historyIndex.value = 0
         }
     }
@@ -296,7 +311,6 @@ class MainViewModel(private val application: Application) : ViewModel() {
             val updatedAffirmations = _affirmations.value + newAffirmation
             repository.saveAffirmations(updatedAffirmations)
 
-            // --- OPTIMIZED UPDATE ---
             _affirmations.value = updatedAffirmations
             _verses.value = _verses.value + newAffirmation
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
@@ -308,7 +322,6 @@ class MainViewModel(private val application: Application) : ViewModel() {
             val updatedAffirmations = _affirmations.value.filter { it != affirmation }
             repository.saveAffirmations(updatedAffirmations)
 
-            // --- OPTIMIZED UPDATE ---
             _affirmations.value = updatedAffirmations
             _verses.value = _verses.value.filter { it != affirmation }
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
