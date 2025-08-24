@@ -170,7 +170,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
         if (_verses.value.isNotEmpty()) {
             // If data is already loaded, handle the notification verse immediately
             handleNotificationVerse(verse)
-            //_pendingVerseFromNotification.value = null // Clear it once handled
+            _pendingVerseFromNotification.value = null // Clear it once handled
         } else {
             // If data is not yet loaded, store it to be processed by loadData later.
             _pendingVerseFromNotification.value = verse
