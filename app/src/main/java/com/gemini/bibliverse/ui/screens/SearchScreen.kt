@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
+import androidx.compose.ui.platform.LocalFocusManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +29,8 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
+    // Get LocalFocusManager for closing On-Screen keyboard
+    val focusManager = LocalFocusManager.current
 
     DisposableEffect(Unit) {
         onDispose {
@@ -87,6 +90,8 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                             onClick = {
                                 viewModel.setCurrentVerse(result.verse)
                                 navController.navigate(Screen.Main.route)
+                                // Forcefully close On-Screen Keyboard to prevent delay
+                                focusManager.clearFocus()
                             }
                         )
                     }
