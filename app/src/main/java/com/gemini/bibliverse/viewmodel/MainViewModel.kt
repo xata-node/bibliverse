@@ -92,6 +92,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
             _isSearching.value = true
             val startTime = System.currentTimeMillis()
             val trimmedQuery = query.trim().lowercase()
+            // Handle empty query after trim, or query consisting only of spaces
+            val queryWords = trimmedQuery.split(" ").filter { it.isNotBlank() }
 
             // Шаг 1: Поиск в быстром индексе по ссылкам (главы и стихи)
             val referenceResults = referenceSearchIndex[trimmedQuery]
@@ -100,8 +102,17 @@ class MainViewModel(private val application: Application) : ViewModel() {
             } else {
                 // Шаг 2: Если в быстром индексе нет, делаем обычный текстовый поиск
                 verseList.filter { verse ->
-                    verse.text.lowercase().contains(trimmedQuery) ||
-                            verse.reference.lowercase().contains(trimmedQuery)
+                    if (queryWords.size == 1) {
+                        // For single-word queries, keep the existing 'word-starts-with' behavior.
+                        // Example: "hand" will match "hands", "handle".
+                        verse.text.lowercase().containsWordStartingWith(trimmedQuery) ||
+                                verse.reference.lowercase().containsWordStartingWith(trimmedQuery)
+                    } else {
+                        // For multi-word queries, perform a strict order phrase search.
+                        // Example: "hand god" will match "hand god" but NOT "hands of god".
+                        verse.text.lowercase().contains(trimmedQuery) ||
+                                verse.reference.lowercase().contains(trimmedQuery)
+                    }
                 }
             }
 
@@ -351,6 +362,31 @@ class MainViewModel(private val application: Application) : ViewModel() {
             verseToIndexMap = _verses.value.withIndex().associate { (i, v) -> v to i }
         }
     }
+}
+
+private fun String.containsWordStartingWith(queryPart: String): Boolean {
+    if (queryPart.isBlank()) return true
+
+    val lowerCaseText = this.lowercase()
+    val lowerCaseQueryPart = queryPart.lowercase()
+
+    var searchStartIndex = 0
+    while (searchStartIndex <= lowerCaseText.length - lowerCaseQueryPart.length) {
+        val matchIndex = lowerCaseText.indexOf(lowerCaseQueryPart, searchStartIndex)
+
+        if (matchIndex == -1) {
+            return false
+        }
+
+        // Check if the match is at the beginning of the text,
+        // or if it's preceded by a non-letter/digit character (word boundary)
+        if (matchIndex == 0 || !lowerCaseText[matchIndex - 1].isLetterOrDigit()) {
+            return true
+        }
+
+        searchStartIndex = matchIndex + 1
+    }
+    return false
 }
 
 data class SearchResult(val verse: Verse, val isFavorite: Boolean)
