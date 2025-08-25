@@ -65,7 +65,13 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                            // Forcefully close On-Screen Keyboard to prevent delay
+                            focusManager.clearFocus()
+                        }
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
