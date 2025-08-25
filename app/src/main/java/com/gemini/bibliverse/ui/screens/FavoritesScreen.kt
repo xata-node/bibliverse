@@ -1,5 +1,6 @@
 package com.gemini.bibliverse.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +53,11 @@ fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
                     // FIX 1.1: Используем компонент, который всегда показывает "избранное"
                     FavoriteItem(
                         verse = verse,
-                        onRemove = { viewModel.toggleFavorite(verse) }
+                        onRemove = { viewModel.toggleFavorite(verse) },
+                        onClick = {
+                            viewModel.setCurrentVerse(verse)
+                            navController.navigate(Screen.Main.route)
+                        }
                     )
                 }
             }
@@ -61,8 +67,11 @@ fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
 
 // Компонент для элемента в списке избранного
 @Composable
-fun FavoriteItem(verse: Verse, onRemove: () -> Unit) {
-    Card(elevation = CardDefaults.cardElevation(2.dp)) {
+fun FavoriteItem(verse: Verse, onRemove: () -> Unit, onClick: () -> Unit) {
+    Card(
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.clickable(onClick = onClick) // Make the whole card clickable
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

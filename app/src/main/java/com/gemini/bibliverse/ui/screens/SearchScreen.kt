@@ -1,5 +1,6 @@
 package com.gemini.bibliverse.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +83,11 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                         SearchResultItem(
                             verse = result.verse,
                             isFavorite = result.isFavorite,
-                            onToggleFavorite = { viewModel.toggleFavorite(result.verse) }
+                            onToggleFavorite = { viewModel.toggleFavorite(result.verse) },
+                            onClick = {
+                                viewModel.setCurrentVerse(result.verse)
+                                navController.navigate(Screen.Main.route)
+                            }
                         )
                     }
                 }
@@ -91,8 +97,11 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
 }
 
 @Composable
-fun SearchResultItem(verse: Verse, isFavorite: Boolean, onToggleFavorite: () -> Unit) {
-    Card(elevation = CardDefaults.cardElevation(2.dp)) {
+fun SearchResultItem(verse: Verse, isFavorite: Boolean, onToggleFavorite: () -> Unit, onClick: () -> Unit) {
+    Card(
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.gemini.bibliverse.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
+import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @Composable
@@ -149,7 +151,11 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
                             affirmationToEdit = it
                             showDialog = true
                         },
-                        onRemove = { viewModel.removeAffirmation(it) }
+                        onRemove = { viewModel.removeAffirmation(it) },
+                        onClick = {
+                            viewModel.setCurrentVerse(it)
+                            navController.navigate(Screen.Main.route)
+                        }
                     )
                 }
             }
@@ -161,9 +167,13 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
 fun AffirmationItem(
     affirmation: Verse,
     onEdit: (Verse) -> Unit,
-    onRemove: (Verse) -> Unit
+    onRemove: (Verse) -> Unit,
+    onClick: (Verse) -> Unit
 ) {
-    Card(elevation = CardDefaults.cardElevation(2.dp)) {
+    Card(
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.clickable(onClick = { onClick(affirmation) })
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
