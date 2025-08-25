@@ -72,7 +72,7 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (isSearching) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (searchQuery.isNotBlank() && searchResults.isEmpty()) {
+            } else if (searchQuery.trim().length >= 2 && searchResults.isEmpty()) {
                 Text("No verses found.", modifier = Modifier.align(Alignment.Center))
             } else {
                 LazyColumn(

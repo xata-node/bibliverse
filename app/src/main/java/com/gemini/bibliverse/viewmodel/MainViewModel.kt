@@ -84,6 +84,12 @@ class MainViewModel(private val application: Application) : ViewModel() {
     private val filteredVerses = searchQuery
         .debounce(300)
         .combine(searchableVerses) { query, verseList -> // Search the pre-filtered list
+            // Сначала проверяем длину запроса здесь, в потоке данных
+            if (query.trim().length < 2 && query.isNotBlank()) {
+                _isSearching.value = false
+                return@combine emptyList<Verse>()
+            }
+
             if (query.isBlank() || verseList.isEmpty()) {
                 _isSearching.value = false
                 return@combine emptyList<Verse>()
