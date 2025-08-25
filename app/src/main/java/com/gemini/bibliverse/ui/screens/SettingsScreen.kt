@@ -223,7 +223,7 @@ fun SettingsScreen(viewModel: MainViewModel, navController: NavController) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // --- Affirmations Section ---
-            Text("User Affirmations", style = MaterialTheme.typography.titleMedium)
+            Text("My Affirmations", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Enable in verse rotation")
                 Spacer(modifier = Modifier.weight(1f))
