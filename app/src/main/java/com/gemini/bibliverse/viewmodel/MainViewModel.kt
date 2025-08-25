@@ -179,11 +179,22 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     // New function to correctly handle history for notification verses
     private fun handleNotificationVerse(verse: Verse) {
-        val index = verseToIndexMap[verse] ?: return // Verse not found
+        setCurrentVerse(verse)
+
+    }
+
+    // New private helper function to handle history updates
+    private fun addVerseToHistoryAndShow(index: Int) {
         val newHistory = _verseHistory.value + index
         _verseHistory.value = newHistory
         _historyIndex.value = newHistory.lastIndex
         _currentVerse.value = _verses.value.getOrNull(index)
+    }
+
+    // This function is now the single point for setting a verse from UI or notifications
+    fun setCurrentVerse(verse: Verse) {
+        val index = verseToIndexMap[verse] ?: return
+        addVerseToHistoryAndShow(index)
     }
 
     fun showInitialVerse(verseToShow: Verse? = null) {
@@ -226,10 +237,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
                 newIndex = verseToIndexMap[randomVerse] ?: -1
             } while (newIndex == currentVerseIndex || newIndex == -1)
 
-            val newHistory = _verseHistory.value + newIndex
-            _verseHistory.value = newHistory
-            _historyIndex.value = newHistory.lastIndex
-            _currentVerse.value = _verses.value[newIndex]
+            addVerseToHistoryAndShow(newIndex)
         }
     }
 
