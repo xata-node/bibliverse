@@ -14,8 +14,10 @@ import com.gemini.bibliverse.data.VerseRepository
 import com.gemini.bibliverse.notifications.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -47,6 +49,10 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
     private val _currentVerse = MutableStateFlow<Verse?>(null)
     val currentVerse = _currentVerse.asStateFlow()
+
+    // --- NAVIGATION EVENT ---
+    private val _navigateToMainScreen = MutableSharedFlow<Unit>()
+    val navigateToMainScreen = _navigateToMainScreen.asSharedFlow()
 
     private val _favorites = dataStoreManager.getFavorites()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
@@ -183,6 +189,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
     }
 
     private val _pendingVerseFromNotification = MutableStateFlow<Verse?>(null)
+
     fun setVerseFromNotification(verse: Verse) {
         if (_verses.value.isNotEmpty()) {
             // If data is already loaded, handle the notification verse immediately
@@ -191,6 +198,11 @@ class MainViewModel(private val application: Application) : ViewModel() {
         } else {
             // If data is not yet loaded, store it to be processed by loadData later.
             _pendingVerseFromNotification.value = verse
+        }
+
+        //Emit event to navigate user to main screen
+        viewModelScope.launch {
+            _navigateToMainScreen.emit(Unit)
         }
     }
 
