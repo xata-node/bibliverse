@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,12 +24,14 @@ import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.Book
 import com.gemini.bibliverse.viewmodel.Chapter
 import com.gemini.bibliverse.viewmodel.MainViewModel
-import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChaptersScreen(viewModel: MainViewModel, navController: NavController) {
     val books by viewModel.books.collectAsState()
+
+    // Используем `rememberSaveable` для сохранения состояния expandedBooks при смене конфигурации
+    var expandedBooks by rememberSaveable { mutableStateOf(setOf<String>()) }
 
     Scaffold(
         topBar = {
@@ -46,21 +50,40 @@ fun ChaptersScreen(viewModel: MainViewModel, navController: NavController) {
             contentPadding = PaddingValues(16.dp)
         ) {
             items(books) { book ->
-                BookItem(book = book, viewModel = viewModel, navController = navController)
+                BookItem(
+                    book = book,
+                    viewModel = viewModel,
+                    navController = navController,
+                    isExpanded = expandedBooks.contains(book.name), // Проверяем, развернута ли книга
+                    onToggleExpand = { // Обработчик для переключения состояния
+                        expandedBooks = if (expandedBooks.contains(book.name)) {
+                            expandedBooks - book.name
+                        } else {
+                            expandedBooks + book.name
+                        }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun BookItem(book: Book, viewModel: MainViewModel, navController: NavController) {
-    var isExpanded by remember { mutableStateOf(false) }
+fun BookItem(
+    book: Book,
+    viewModel: MainViewModel,
+    navController: NavController,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit
+) {
+    // Используем `rememberSaveable` для сохранения состояния expandedChapters при смене конфигурации
+    var expandedChapters by rememberSaveable { mutableStateOf(setOf<Int>()) }
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }
+                .clickable { onToggleExpand() }
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -73,7 +96,19 @@ fun BookItem(book: Book, viewModel: MainViewModel, navController: NavController)
         AnimatedVisibility(visible = isExpanded) {
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 book.chapters.forEach { chapter ->
-                    ChapterItem(chapter = chapter, viewModel = viewModel, navController = navController)
+                    ChapterItem(
+                        chapter = chapter,
+                        viewModel = viewModel,
+                        navController = navController,
+                        isExpanded = expandedChapters.contains(chapter.number),
+                        onToggleExpand = {
+                            expandedChapters = if (expandedChapters.contains(chapter.number)) {
+                                expandedChapters - chapter.number
+                            } else {
+                                expandedChapters + chapter.number
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -81,14 +116,18 @@ fun BookItem(book: Book, viewModel: MainViewModel, navController: NavController)
 }
 
 @Composable
-fun ChapterItem(chapter: Chapter, viewModel: MainViewModel, navController: NavController) {
-    var isExpanded by remember { mutableStateOf(false) }
-
+fun ChapterItem(
+    chapter: Chapter,
+    viewModel: MainViewModel,
+    navController: NavController,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit
+) {
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }
+                .clickable { onToggleExpand() }
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
