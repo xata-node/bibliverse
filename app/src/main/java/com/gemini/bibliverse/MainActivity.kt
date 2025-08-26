@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
+//import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.gemini.bibliverse.data.DataStoreManager
 import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.ui.navigation.BibliverseNavHost
@@ -24,6 +25,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Call installSplashScreen before super.onCreate() to launch splash screen.
+        //installSplashScreen()
+
         super.onCreate(savedInstanceState)
         dataStoreManager = DataStoreManager(this)
 
@@ -33,7 +37,7 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
 
         setContent {
-            val currentTheme by dataStoreManager.getTheme().collectAsState(initial = "dark")
+            val currentTheme by dataStoreManager.getTheme().collectAsState(initial = "light")
             val isDarkTheme = currentTheme == "dark"
 
             BibliverseTheme(darkTheme = isDarkTheme) {

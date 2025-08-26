@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.os.bundleOf
 import com.gemini.bibliverse.MainActivity
 import com.gemini.bibliverse.R
 import com.gemini.bibliverse.data.DataStoreManager
@@ -65,7 +66,11 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         val pendingIntent = PendingIntent.getActivity(
             context, 1, activityIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            /* options = */
+            // To Force splash screen to show launcher icon, set to 1 or "icon_preferred"
+            // More info: https://issuetracker.google.com/issues/205021357
+            bundleOf("android.activity.splashScreenStyle" to 1)
         )
 
         val notification = NotificationCompat.Builder(context, channelId)

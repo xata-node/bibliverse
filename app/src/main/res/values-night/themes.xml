@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Тема для светлого режима -->
-    <style name="Theme.Bibliverse" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Тема для темного режима -->
+    <style name="Theme.Bibliverse" parent="android:Theme.Material.NoActionBar" />
 
     <!-- Placeholder Тема для экрана-заставки -->
     <!--<style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenBackground">@android:color/black</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.Bibliverse</item>
     </style> -->
