@@ -96,7 +96,12 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                             onToggleFavorite = { viewModel.toggleFavorite(result.verse) },
                             onClick = {
                                 viewModel.setCurrentVerse(result.verse)
-                                navController.navigate(Screen.Main.route)
+                                navController.navigate(Screen.Main.route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        inclusive = true // Often included, especially if startDestinationId is Main
+                                    }
+                                    launchSingleTop = true
+                                }
                                 // Forcefully close On-Screen Keyboard to prevent delay
                                 focusManager.clearFocus()
                             }

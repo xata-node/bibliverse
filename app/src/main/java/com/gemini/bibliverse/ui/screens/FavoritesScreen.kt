@@ -56,7 +56,12 @@ fun FavoritesScreen(viewModel: MainViewModel, navController: NavController) {
                         onRemove = { viewModel.toggleFavorite(verse) },
                         onClick = {
                             viewModel.setCurrentVerse(verse)
-                            navController.navigate(Screen.Main.route)
+                            navController.navigate(Screen.Main.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true // Often included, especially if startDestinationId is Main
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
