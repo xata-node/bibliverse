@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.TreeMap
+import java.util.LinkedHashMap
 
 @OptIn(FlowPreview::class)
 class MainViewModel(private val application: Application) : ViewModel() {
@@ -195,7 +196,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun buildChapterIndex(bibleVerses: List<Verse>) {
-        val booksMap = TreeMap<String, MutableMap<Int, MutableList<Verse>>>()
+        // Заменяем TreeMap на LinkedHashMap для сохранения порядка вставки
+        val booksMap = LinkedHashMap<String, MutableMap<Int, MutableList<Verse>>>()
         bibleVerses.forEach { verse ->
             val referenceParts = verse.reference.split(" ")
             if (referenceParts.size > 1) {
@@ -204,6 +206,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
                 if (chapterAndVerse.size == 2) {
                     val chapterNumber = chapterAndVerse[0].toIntOrNull()
                     if (chapterNumber != null) {
+                        // Используем TreeMap для глав, чтобы они были отсортированы по номеру
                         val book = booksMap.getOrPut(bookName) { TreeMap() }
                         val chapter = book.getOrPut(chapterNumber) { mutableListOf() }
                         chapter.add(verse)
