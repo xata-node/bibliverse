@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
@@ -81,9 +82,15 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
                 ) {
                     NavigationBarItem(
                         selected = true,
-                        onClick = { /* Уже на главном */ },
+                        onClick = { /* Already on Home */ },
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                         label = { Text("Home") }
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { navController.navigate(Screen.Chapters.route) },
+                        icon = { Icon(Icons.AutoMirrored.Default.List, contentDescription = "Chapters") },
+                        label = { Text("Chapters") }
                     )
                     NavigationBarItem(
                         selected = false,

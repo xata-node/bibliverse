@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.TreeMap
 
 @OptIn(FlowPreview::class)
 class MainViewModel(private val application: Application) : ViewModel() {
@@ -53,6 +54,10 @@ class MainViewModel(private val application: Application) : ViewModel() {
     // --- NAVIGATION EVENT ---
     private val _navigateToMainScreen = MutableSharedFlow<Unit>()
     val navigateToMainScreen = _navigateToMainScreen.asSharedFlow()
+
+    // --- CHAPTERS ---
+    private val _books = MutableStateFlow<List<Book>>(emptyList())
+    val books = _books.asStateFlow()
 
     private val _favorites = dataStoreManager.getFavorites()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
@@ -162,6 +167,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
             _affirmations.value = allVerses.filter { it.isAffirmation } // Separate affirmations
 
             verseToIndexMap = allVerses.withIndex().associate { (i, v) -> v to i }
+            buildChapterIndex(allVerses.filter { !it.isAffirmation })
 
             val refIndex = allVerses.groupBy { verse ->
                 verse.reference.lowercase()
@@ -185,6 +191,36 @@ class MainViewModel(private val application: Application) : ViewModel() {
                 showInitialVerse()
             }
             _isSearching.value = false
+        }
+    }
+
+    private fun buildChapterIndex(bibleVerses: List<Verse>) {
+        val booksMap = TreeMap<String, MutableMap<Int, MutableList<Verse>>>()
+        bibleVerses.forEach { verse ->
+            val referenceParts = verse.reference.split(" ")
+            if (referenceParts.size > 1) {
+                val bookName = referenceParts.dropLast(1).joinToString(" ")
+                val chapterAndVerse = referenceParts.last().split(":")
+                if (chapterAndVerse.size == 2) {
+                    val chapterNumber = chapterAndVerse[0].toIntOrNull()
+                    if (chapterNumber != null) {
+                        val book = booksMap.getOrPut(bookName) { TreeMap() }
+                        val chapter = book.getOrPut(chapterNumber) { mutableListOf() }
+                        chapter.add(verse)
+                    }
+                }
+            }
+        }
+        _books.value = booksMap.map { (bookName, chaptersMap) ->
+            Book(
+                name = bookName,
+                chapters = chaptersMap.map { (chapterNumber, verses) ->
+                    Chapter(
+                        number = chapterNumber,
+                        verses = verses
+                    )
+                }
+            )
         }
     }
 
@@ -408,3 +444,5 @@ private fun String.containsWordStartingWith(queryPart: String): Boolean {
 }
 
 data class SearchResult(val verse: Verse, val isFavorite: Boolean)
+data class Book(val name: String, val chapters: List<Chapter>)
+data class Chapter(val number: Int, val verses: List<Verse>)
