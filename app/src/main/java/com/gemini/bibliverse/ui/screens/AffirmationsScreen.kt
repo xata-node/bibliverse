@@ -154,7 +154,12 @@ fun AffirmationsScreen(viewModel: MainViewModel, navController: NavController) {
                         onRemove = { viewModel.removeAffirmation(it) },
                         onClick = {
                             viewModel.setCurrentVerse(it)
-                            navController.navigate(Screen.Main.route)
+                            navController.navigate(Screen.Main.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true // Often included, especially if startDestinationId is Main
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
