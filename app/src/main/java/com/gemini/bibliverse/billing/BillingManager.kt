@@ -25,7 +25,7 @@ class BillingManager(context: Context) {
             }
         } else {
             Log.e("BillingManager", "Purchase error: ${billingResult.debugMessage}")
-            _message.value = "Ошибка покупки: ${billingResult.debugMessage}"
+            _message.value = "Purchase error: ${billingResult.debugMessage}"
         }
     }
 
@@ -62,6 +62,10 @@ class BillingManager(context: Context) {
                 .build(),
             QueryProductDetailsParams.Product.newBuilder()
                 .setProductId("donation_tier_2") // Пример второго доната
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build(),
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("donation_tier_3")
                 .setProductType(BillingClient.ProductType.INAPP)
                 .build()
         )
@@ -101,7 +105,7 @@ class BillingManager(context: Context) {
         billingClient.consumeAsync(consumeParams) { billingResult, _ ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 Log.d("BillingManager", "Purchase consumed")
-                _message.value = "Спасибо за вашу поддержку!"
+                _message.value = "Thank you for your support!"
             } else {
                 Log.e("BillingManager", "Failed to consume purchase: ${billingResult.debugMessage}")
             }
