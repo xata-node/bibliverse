@@ -21,9 +21,11 @@
 
     <string name="credits_title">Credits</string>
     <string name="icons_source_prefix">Icons from SVG Repo</string>
+    <string name="gemini_ai_prefix">Help from Gemini AI</string>
 
     <string name="privacy_policy_url">https://xata-node.github.io</string>
     <string name="privacy_policy_url_backup">https://storage.googleapis.com/bibliverse-privacy-policy/index.html</string>
     <string name="feedback_email">kokoroshi@protonmail.ch</string>
     <string name="icons_url">https://www.svgrepo.com</string>
+    <string name="gemini_ai_url">https://gemini.google.com/</string>
 </resources>

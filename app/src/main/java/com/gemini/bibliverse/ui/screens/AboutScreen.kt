@@ -99,6 +99,14 @@ fun AboutScreen(navController: NavController) {
                     context.startActivity(intent)
                 }
             )
+            // Gemini AI Credits Link
+            ClickableLinkRow(
+                text = stringResource(R.string.gemini_ai_prefix),
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW,context.getString(R.string.gemini_ai_url).toUri())
+                    context.startActivity(intent)
+                }
+            )
         }
     }
 }
