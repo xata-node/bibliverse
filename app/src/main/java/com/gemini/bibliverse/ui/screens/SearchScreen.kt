@@ -16,12 +16,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
-import androidx.compose.ui.platform.LocalFocusManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +52,7 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                         placeholder = { Text("Search by word or reference...") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        colors = TextFieldDefaults.colors( // Changed from textFieldColors to colors
+                        colors = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                             disabledContainerColor = MaterialTheme.colorScheme.surface,
@@ -92,6 +96,7 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                     items(searchResults, key = { it.verse.text + it.verse.reference }) { result ->
                         SearchResultItem(
                             verse = result.verse,
+                            query = searchQuery, // Pass query for highlighting
                             isFavorite = result.isFavorite,
                             onToggleFavorite = { viewModel.toggleFavorite(result.verse) },
                             onClick = {
@@ -114,7 +119,13 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
 }
 
 @Composable
-fun SearchResultItem(verse: Verse, isFavorite: Boolean, onToggleFavorite: () -> Unit, onClick: () -> Unit) {
+fun SearchResultItem(
+    verse: Verse,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onClick: () -> Unit,
+    query: String
+) {
     Card(
         elevation = CardDefaults.cardElevation(2.dp),
         modifier = Modifier.clickable(onClick = onClick)
@@ -126,9 +137,18 @@ fun SearchResultItem(verse: Verse, isFavorite: Boolean, onToggleFavorite: () -> 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(verse.text, style = MaterialTheme.typography.bodyLarge)
+                // Use the new HighlightedText composable
+                HighlightedText(
+                    fullText = verse.text,
+                    query = query,
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(verse.reference, style = MaterialTheme.typography.bodySmall)
+                HighlightedText(
+                    fullText = verse.reference,
+                    query = query,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
             IconButton(onClick = onToggleFavorite) {
                 Icon(
@@ -139,4 +159,61 @@ fun SearchResultItem(verse: Verse, isFavorite: Boolean, onToggleFavorite: () -> 
             }
         }
     }
+}
+
+/**
+ * A composable that displays text with parts of it highlighted based on a search query.
+ * This function handles multiple keywords, partial words, and respects word boundaries.
+ *
+ * @param fullText The complete text to be displayed.
+ * @param query The search query string. Keywords will be highlighted.
+ * @param style The text style to be applied to the entire text.
+ */
+@Composable
+private fun HighlightedText(
+    fullText: String,
+    query: String,
+    style: TextStyle
+) {
+    // If the query is blank, no need to highlight anything.
+    if (query.isBlank()) {
+        Text(fullText, style = style)
+        return
+    }
+
+    val annotatedString = buildAnnotatedString {
+        // Get the individual keywords from the query.
+        val queryWords = query.trim().lowercase().split(Regex("\\s+")).filter { it.isNotBlank() }
+
+        // Create a regex pattern that finds any of the keywords.
+        // Regex.escape ensures that special characters in the query don't break the regex.
+        // The `|` acts as an "OR" operator.
+        val pattern = queryWords.joinToString(separator = "|") { Regex.escape(it) }.toRegex(RegexOption.IGNORE_CASE)
+
+        // Find all matches of the pattern in the full text.
+        val matches = pattern.findAll(fullText).toList()
+        var lastIndex = 0
+
+        matches.forEach { matchResult ->
+            // Append the text before the current match.
+            append(fullText.substring(lastIndex, matchResult.range.first))
+
+            // Append the matched keyword with the highlight style.
+            withStyle(
+                style = SpanStyle(
+                    background = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+            ) {
+                append(matchResult.value)
+            }
+            // Update the last index to the end of the current match.
+            lastIndex = matchResult.range.last + 1
+        }
+
+        // Append any remaining text after the last match.
+        if (lastIndex < fullText.length) {
+            append(fullText.substring(lastIndex))
+        }
+    }
+    Text(annotatedString, style = style)
 }
