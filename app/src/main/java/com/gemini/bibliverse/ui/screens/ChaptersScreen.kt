@@ -87,7 +87,11 @@ fun BookItem(
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(book.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            Text(
+                book.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
             Icon(
                 imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 contentDescription = if (isExpanded) "Collapse" else "Expand"
@@ -131,7 +135,11 @@ fun ChapterItem(
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Chapter ${chapter.number}", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(
+                "Chapter ${chapter.number}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
             Icon(
                 imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 contentDescription = if (isExpanded) "Collapse" else "Expand"
@@ -150,8 +158,7 @@ fun ChapterItem(
                             viewModel.setCurrentVerse(verse)
                             navController.navigate(Screen.Main.route) {
                                 popUpTo(navController.graph.startDestinationId) {
-                                    inclusive =
-                                        true // Often included, especially if startDestinationId is Main
+                                    inclusive = true // Often included, especially if startDestinationId is Main
                                 }
                                 launchSingleTop = true
                             }
