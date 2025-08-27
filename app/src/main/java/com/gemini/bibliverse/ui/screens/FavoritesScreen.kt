@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -91,9 +91,9 @@ fun FavoriteItem(verse: Verse, onRemove: () -> Unit, onClick: () -> Unit) {
             // Иконка всегда заполнена и работает на удаление
             IconButton(onClick = onRemove) {
                 Icon(
-                    imageVector = Icons.Filled.Favorite,
+                    imageVector = Icons.Filled.Delete,
                     contentDescription = "Remove from Favorites",
-                    tint = MaterialTheme.colorScheme.primary
+                    //tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
