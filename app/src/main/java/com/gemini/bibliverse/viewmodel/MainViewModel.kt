@@ -119,18 +119,40 @@ class MainViewModel(private val application: Application) : ViewModel() {
                 referenceResults.filter { verse -> verse in verseList } // Ensure result is in the searchable list
             } else {
                 // Шаг 2: Если в быстром индексе нет, делаем обычный текстовый поиск
-                verseList.filter { verse ->
-                    if (queryWords.size == 1) {
-                        // For single-word queries, keep the existing 'word-starts-with' behavior.
-                        // Example: "hand" will match "hands", "handle".
-                        verse.text.lowercase().containsWordStartingWith(trimmedQuery) ||
-                                verse.reference.lowercase().containsWordStartingWith(trimmedQuery)
-                    } else {
-                        // For multi-word queries, perform a strict order phrase search.
-                        // Example: "hand god" will match "hand god" but NOT "hands of god".
-                        verse.text.lowercase().contains(trimmedQuery) ||
-                                verse.reference.lowercase().contains(trimmedQuery)
+                if (queryWords.size == 1) {
+                    // For single-word queries, keep the existing 'word-starts-with' behavior.
+                    // Example: "hand" will match "hands", "handle".
+                    verseList.filter { verse ->
+                        val fullText = "${verse.text.lowercase()} ${verse.reference.lowercase()}"
+                        fullText.containsWordStartingWith(trimmedQuery)
                     }
+                } else {
+                    // 1. Find all verses that contain ALL keywords in any order
+                    val allMatches = verseList.filter { verse ->
+                        val fullText = "${verse.text.lowercase()} ${verse.reference.lowercase()}"
+                        queryWords.all { keyword ->
+                            fullText.containsWordStartingWith(keyword)
+                        }
+                    }
+
+                    // 2. Partition the results into ordered and unordered
+                    val (orderedMatches, unorderedMatches) = allMatches.partition { verse ->
+                        val fullText = "${verse.text.lowercase()} ${verse.reference.lowercase()}"
+                        var lastIndex = -1
+                        var inOrder = true
+                        for (word in queryWords) {
+                            val currentIndex = fullText.findWordIndex(word, startIndex = lastIndex + 1)
+                            if (currentIndex == -1 || currentIndex < lastIndex) {
+                                inOrder = false
+                                break
+                            }
+                            lastIndex = currentIndex
+                        }
+                        inOrder
+                    }
+
+                    // 3. Combine the lists, with ordered matches first.
+                    orderedMatches + unorderedMatches
                 }
             }
 
@@ -423,27 +445,30 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
 private fun String.containsWordStartingWith(queryPart: String): Boolean {
     if (queryPart.isBlank()) return true
+    return this.findWordIndex(queryPart) != -1
+}
 
-    val lowerCaseText = this.lowercase()
-    val lowerCaseQueryPart = queryPart.lowercase()
+private fun String.findWordIndex(word: String, startIndex: Int = 0): Int {
+    if (word.isBlank()) return -1
 
-    var searchStartIndex = 0
-    while (searchStartIndex <= lowerCaseText.length - lowerCaseQueryPart.length) {
-        val matchIndex = lowerCaseText.indexOf(lowerCaseQueryPart, searchStartIndex)
+    val lowerCaseText = this
+    val lowerCaseWord = word
 
+    var searchIndex = startIndex
+    while (searchIndex <= lowerCaseText.length - lowerCaseWord.length) {
+        val matchIndex = lowerCaseText.indexOf(lowerCaseWord, searchIndex)
         if (matchIndex == -1) {
-            return false
+            return -1
         }
 
         // Check if the match is at the beginning of the text,
         // or if it's preceded by a non-letter/digit character (word boundary)
         if (matchIndex == 0 || !lowerCaseText[matchIndex - 1].isLetterOrDigit()) {
-            return true
+            return matchIndex
         }
-
-        searchStartIndex = matchIndex + 1
+        searchIndex = matchIndex + 1
     }
-    return false
+    return -1
 }
 
 data class SearchResult(val verse: Verse, val isFavorite: Boolean)
