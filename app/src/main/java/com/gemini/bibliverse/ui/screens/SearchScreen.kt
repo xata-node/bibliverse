@@ -109,6 +109,8 @@ fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
                                 }
                                 // Forcefully close On-Screen Keyboard to prevent delay
                                 focusManager.clearFocus()
+                                // Prevent showing previous results when screen is opened next time.
+                                viewModel.onSearchQueryChange("")
                             }
                         )
                     }
