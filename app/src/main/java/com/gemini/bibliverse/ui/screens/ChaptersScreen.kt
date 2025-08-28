@@ -158,7 +158,7 @@ fun ChapterItem(
                             viewModel.setCurrentVerse(verse)
                             navController.navigate(Screen.Main.route) {
                                 popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = true // Often included, especially if startDestinationId is Main
+                                    inclusive = false // Don't pop Main screen itself from stack to prevent animation skip
                                 }
                                 launchSingleTop = true
                             }
