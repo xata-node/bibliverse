@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.gemini.bibliverse.data.Verse
 import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
@@ -48,6 +49,10 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
     val verse by viewModel.currentVerse.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val context = LocalContext.current
+
+    // Observe the current route from the NavController.
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         topBar = {
@@ -75,32 +80,39 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
         },
         bottomBar = {
             BottomAppBar {
+                // This helper function prevents navigating to a destination if we're already there
+                val onNavigate: (String) -> Unit = { route ->
+                    if (currentRoute != route) {
+                        navController.navigate(route)
+                    }
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     NavigationBarItem(
-                        selected = true,
+                        selected = currentRoute == Screen.Main.route,
                         onClick = { /* Already on Home */ },
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                         label = { Text("Home") }
                     )
                     NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate(Screen.Chapters.route) },
+                        selected = currentRoute == Screen.Chapters.route,
+                        onClick = { onNavigate(Screen.Chapters.route) },
                         icon = { Icon(Icons.AutoMirrored.Default.List, contentDescription = "Chapters") },
                         label = { Text("Chapters") }
                     )
                     NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate(Screen.Search.route) },
+                        selected = currentRoute == Screen.Search.route,
+                        onClick = { onNavigate(Screen.Search.route) },
                         icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                         label = { Text("Search") }
                     )
                     NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate(Screen.Favorites.route) },
+                        selected = currentRoute == Screen.Favorites.route,
+                        onClick = { onNavigate(Screen.Favorites.route) },
                         icon = { Icon(Icons.Default.Favorite, contentDescription = "Favorites") },
                         label = { Text("Favorites") }
                     )
