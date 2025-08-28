@@ -29,7 +29,7 @@ import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navController: NavController, viewModel: MainViewModel) {
+fun SearchScreen(viewModel: MainViewModel, navController: NavController) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()

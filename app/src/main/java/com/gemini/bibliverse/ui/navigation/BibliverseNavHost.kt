@@ -1,11 +1,9 @@
 package com.gemini.bibliverse.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.gemini.bibliverse.ui.screens.AboutScreen
 import com.gemini.bibliverse.ui.screens.AffirmationsScreen
 import com.gemini.bibliverse.ui.screens.ChaptersScreen
@@ -14,7 +12,6 @@ import com.gemini.bibliverse.ui.screens.MainScreen
 import com.gemini.bibliverse.ui.screens.SearchScreen
 import com.gemini.bibliverse.ui.screens.SettingsScreen
 import com.gemini.bibliverse.viewmodel.MainViewModel
-import kotlinx.coroutines.flow.collectLatest
 
 // Определяем маршруты
 sealed class Screen(val route: String) {
@@ -28,33 +25,9 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun BibliverseNavHost(viewModel: MainViewModel) {
-    val navController = rememberNavController()
-
-    // This LaunchedEffect listens for navigation events from the ViewModel.
-    // When an event is received, it navigates to the Main screen.
-    LaunchedEffect(Unit) {
-        viewModel.navigateToMainScreen.collectLatest {
-            // NOTE: The previous code was using `inclusive = true`, which was popping the
-            // MainScreen from the backstack and then recreating it, causing a "flicker".
-            // To fix this, we should not pop the MainScreen itself.
-            // The `inclusive = false` parameter ensures we only pop destinations
-            // up to the MainScreen, but leave the MainScreen itself on the stack.
-            // Then, `launchSingleTop = true` will re-use that existing instance.
-            navController.navigate(Screen.Main.route) {
-                // To avoid creating multiple copies of the same screen
-                // when we repeatedly click on an item that navigates to the main screen.
-                // ALWAYS pop all destinations until the start destination, INCLUDING the start destination itself.
-                // This ensures a clean back stack. Pressing back from the MainScreen will then exit the app.
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = false // Don't pop Main screen itself from stack
-                }
-
-                // Reuse the existing MainScreen if it's already there.
-                launchSingleTop = true
-            }
-        }
-    }
+fun BibliverseNavHost(viewModel: MainViewModel, navController: NavHostController) {
+    // The NavController is now passed in from MainActivity.
+    // The LaunchedEffect for notifications has been moved to MainActivity.
 
     NavHost(navController = navController, startDestination = Screen.Main.route) {
         composable(Screen.Main.route) {
@@ -70,7 +43,7 @@ fun BibliverseNavHost(viewModel: MainViewModel) {
             SettingsScreen(viewModel = viewModel, navController = navController)
         }
         composable(Screen.Search.route) {
-            SearchScreen(navController = navController, viewModel = viewModel)
+            SearchScreen(viewModel = viewModel, navController = navController)
         }
         composable(Screen.Affirmations.route) {
             AffirmationsScreen(viewModel = viewModel, navController = navController)
