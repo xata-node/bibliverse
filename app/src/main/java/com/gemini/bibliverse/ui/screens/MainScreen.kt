@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -169,18 +170,23 @@ fun MainScreen(viewModel: MainViewModel, navController: NavController) {
                         verticalArrangement = Arrangement.Center
                     ) {
                         verse?.let {
-                            Text(
-                                text = "\"${it.text}\"",
-                                style = MaterialTheme.typography.headlineSmall,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = it.reference,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontStyle = FontStyle.Italic,
-                                textAlign = TextAlign.Center
-                            )
+                            // Оборачиваем текст в SelectionContainer, чтобы сделать его выделяемым
+                            SelectionContainer {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "\"${it.text}\"",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = it.reference,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontStyle = FontStyle.Italic,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         } ?: CircularProgressIndicator()
                     }
                 }
