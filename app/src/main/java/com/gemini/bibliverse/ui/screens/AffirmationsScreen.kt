@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
-import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @Composable

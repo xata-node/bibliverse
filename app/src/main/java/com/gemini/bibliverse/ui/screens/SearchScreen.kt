@@ -24,7 +24,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
-import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gemini.bibliverse.data.Verse
-import com.gemini.bibliverse.ui.navigation.Screen
 import com.gemini.bibliverse.viewmodel.Book
 import com.gemini.bibliverse.viewmodel.Chapter
 import com.gemini.bibliverse.viewmodel.MainViewModel
@@ -53,7 +52,6 @@ fun ChaptersScreen(viewModel: MainViewModel, navController: NavController) {
                 BookItem(
                     book = book,
                     viewModel = viewModel,
-                    navController = navController,
                     isExpanded = expandedBooks.contains(book.name), // Проверяем, развернута ли книга
                     onToggleExpand = { // Обработчик для переключения состояния
                         expandedBooks = if (expandedBooks.contains(book.name)) {
@@ -72,7 +70,6 @@ fun ChaptersScreen(viewModel: MainViewModel, navController: NavController) {
 fun BookItem(
     book: Book,
     viewModel: MainViewModel,
-    navController: NavController,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit
 ) {
@@ -103,7 +100,6 @@ fun BookItem(
                     ChapterItem(
                         chapter = chapter,
                         viewModel = viewModel,
-                        navController = navController,
                         isExpanded = expandedChapters.contains(chapter.number),
                         onToggleExpand = {
                             expandedChapters = if (expandedChapters.contains(chapter.number)) {
@@ -123,7 +119,6 @@ fun BookItem(
 fun ChapterItem(
     chapter: Chapter,
     viewModel: MainViewModel,
-    navController: NavController,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit
 ) {
