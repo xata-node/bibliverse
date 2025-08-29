@@ -14,9 +14,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.gemini.bibliverse.R
 import androidx.core.net.toUri
+import androidx.navigation.NavController
+import com.gemini.bibliverse.BuildConfig
+import com.gemini.bibliverse.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +51,7 @@ fun AboutScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Version Info
-            InfoRow(title = stringResource(R.string.version_title), value = stringResource(R.string.version_number))
+            InfoRow(title = stringResource(R.string.version_title), value = BuildConfig.VERSION_NAME)
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             // Developer Info
