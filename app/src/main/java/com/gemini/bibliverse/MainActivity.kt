@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 //import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -40,8 +41,13 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
 
         setContent {
-            val currentTheme by dataStoreManager.getTheme().collectAsState(initial = "light")
+            // FIX 1: Получаем системную тему для начального состояния
+            val systemThemeIsDark = isSystemInDarkTheme()
+            val initialTheme = if (systemThemeIsDark) "dark" else "light"
+
+            val currentTheme by dataStoreManager.getTheme().collectAsState(initial = initialTheme)
             val isDarkTheme = currentTheme == "dark"
+
             // The NavController is now created and managed here, at the highest level.
             val navController = rememberNavController()
 
