@@ -155,13 +155,11 @@ fun ChapterItem(
                         verse = verse,
                         viewModel = viewModel,
                         onClick = {
-                            viewModel.setCurrentVerse(verse)
-                            navController.navigate(Screen.Main.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = false // Don't pop Main screen itself from stack to prevent animation skip
-                                }
-                                launchSingleTop = true
-                            }
+                            // Вызываем централизованную функцию в ViewModel.
+                            // ViewModel сначала установит стих, а затем отправит событие
+                            // для навигации, которое будет обработано в MainActivity.
+                            // Это решает проблему "гонки состояний" и гарантирует плавную анимацию.
+                            viewModel.selectVerseAndNavigateHome(verse)
                         }
                     )
                 }

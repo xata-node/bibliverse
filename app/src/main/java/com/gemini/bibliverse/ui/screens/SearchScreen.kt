@@ -100,16 +100,14 @@ fun SearchScreen(viewModel: MainViewModel, navController: NavController) {
                             isFavorite = result.isFavorite,
                             onToggleFavorite = { viewModel.toggleFavorite(result.verse) },
                             onClick = {
-                                viewModel.setCurrentVerse(result.verse)
-                                navController.navigate(Screen.Main.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        inclusive = false // Don't pop Main screen itself from stack to prevent animation skip
-                                    }
-                                    launchSingleTop = true
-                                }
-                                // Forcefully close On-Screen Keyboard to prevent delay
+                                // 1. Forcefully close On-Screen Keyboard to prevent delay
                                 focusManager.clearFocus()
-                                // Prevent showing previous results when screen is opened next time.
+                                // 2. Вызываем централизованную функцию в ViewModel.
+                                // ViewModel сначала установит стих, а затем отправит событие
+                                // для навигации, которое будет обработано в MainActivity.
+                                // Это решает проблему "гонки состояний" и гарантирует плавную анимацию.
+                                viewModel.selectVerseAndNavigateHome(result.verse)
+                                // 3. Prevent showing previous results when screen is opened next time.
                                 viewModel.onSearchQueryChange("")
                             }
                         )

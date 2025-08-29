@@ -287,6 +287,18 @@ class MainViewModel(private val application: Application) : ViewModel() {
         addVerseToHistoryAndShow(index)
     }
 
+    /**
+     * Sets the current verse and then triggers navigation to the Main screen.
+     * This is the recommended way to handle navigation from secondary screens like
+     * Favorites, Search, or Chapters to ensure state is updated before navigation begins.
+     */
+    fun selectVerseAndNavigateHome(verse: Verse) {
+        setCurrentVerse(verse)
+        viewModelScope.launch {
+            _navigateToMainScreen.emit(Unit)
+        }
+    }
+
     fun showInitialVerse(verseToShow: Verse? = null) {
         viewModelScope.launch {
             if (_verses.value.isEmpty()) return@launch
